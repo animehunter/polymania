@@ -1,0 +1,7 @@
+*.pdb
+*.obj
+*.o
+*.exe
+*.suo
+*.vcxproj.user
+*/Release/*
