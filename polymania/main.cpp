@@ -405,10 +405,12 @@ int main()
     }
 
     glfwMakeContextCurrent(mainWindow);
+#ifndef __arm__
     if(glewInit() != GLEW_OK)
     {
         std::cerr << "Failed to init glew" << std::endl;
     }
+#endif
     if(!CheckRequiredGLExtension())
     {
         std::cerr << "One or more extension is not found" << std::endl;
