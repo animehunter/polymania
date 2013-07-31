@@ -2,7 +2,11 @@
 #define NOMINMAX
 
 #include <GL/glew.h>
+
+#if defined(_WIN32) || defined(WIN32)
 #include <GL/wglew.h>
+#endif
+
 #include <GL/glfw3.h>
 
 #include <vector>
