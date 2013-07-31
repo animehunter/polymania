@@ -1,7 +1,11 @@
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
 
+#ifdef __arm__
+#include <GLES2/gl.h>
+#else
 #include <GL/glew.h>
+#endif
 
 #if defined(_WIN32) || defined(WIN32)
 #include <GL/wglew.h>
@@ -316,11 +320,17 @@ static void EngineMain(GLFWwindow *mainWindow)
         running = !glfwGetKey(mainWindow, GLFW_KEY_ESCAPE) && !glfwWindowShouldClose(mainWindow);
     }
 }
-int main()
+
+GLFWwindow *CreateContext()
 {
-    glfwInit();
-    glfwSetErrorCallback(&OnError);
-    glfwDefaultWindowHints();
+    GLFWwindow *window=0;
+#ifdef __arm__
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+
+    glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_ES_API);
+    window = glfwCreateWindow(WIDTH, HEIGHT, "Polymania Project", 0, 0);
+#else
     // prefer 3.0 forward compat context
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
@@ -328,28 +338,42 @@ int main()
     //glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_COMPAT_PROFILE);
     glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, 0);
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, 1); //forward compatibility removes deprecated functions
-    GLFWwindow *mainWindow = glfwCreateWindow(WIDTH, HEIGHT, "Polymania Project", 0, 0);
-    
-    if(!mainWindow)
+    window = glfwCreateWindow(WIDTH, HEIGHT, "Polymania Project", 0, 0);
+
+    if(!window)
     {
         // select 3.2 core as fall back
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
         glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, 0);
-        mainWindow = glfwCreateWindow(WIDTH, HEIGHT, "Polymania Project", 0, 0);
+        window = glfwCreateWindow(WIDTH, HEIGHT, "Polymania Project", 0, 0);
     }
-    if(!mainWindow)
+    if(!window)
     {
         // finally try 3.1 forward compat as fall back
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
         glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, 1);
-        mainWindow = glfwCreateWindow(WIDTH, HEIGHT, "Polymania Project", 0, 0);
+        window = glfwCreateWindow(WIDTH, HEIGHT, "Polymania Project", 0, 0);
     }
+
+#endif
+
+    return window;
+}
+int main()
+{
+    glfwInit();
+    glfwSetErrorCallback(&OnError);
+    glfwDefaultWindowHints();
+
+    GLFWwindow *mainWindow = CreateContext();
+
     if(!mainWindow)
     {
         std::cerr << "failed to create gl context" << std::endl;
         glfwTerminate();
         return 0;
     }
+
     glfwMakeContextCurrent(mainWindow);
     if(glewInit() != GLEW_OK)
     {
