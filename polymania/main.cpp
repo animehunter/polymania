@@ -7,7 +7,7 @@
 #include <GL/wglew.h>
 #endif
 
-#include <GL/glfw3.h>
+#include <GLFW/glfw3.h>
 
 #include <vector>
 #include <cstdint>
