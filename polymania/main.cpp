@@ -2,7 +2,8 @@
 #define NOMINMAX
 
 #ifdef __arm__
-#include <GLES2/gl.h>
+#include <GLES2/gl2.h>
+#define GLFW_INCLUDE_ES2
 #else
 #include <GL/glew.h>
 #endif
