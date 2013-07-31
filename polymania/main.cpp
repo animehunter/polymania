@@ -226,8 +226,8 @@ Scene::Scene()
 }
 Scene::~Scene()
 {
-    glBindVertexArray(0);
 #ifndef __arm__
+    glBindVertexArray(0);
     glDeleteVertexArrays(1, &vaoID);
 #endif
     glDeleteShader(vshaderID);
