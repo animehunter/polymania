@@ -31,6 +31,23 @@
 
 ///////////////////////////////////////////////////////////
 // Shaders
+#ifdef __arm__
+const char *vertshader = "attribute vec2 pos;\n"
+                         "attribute vec4 color;\n"
+                         "varying vec4 colorIn; \n"
+                         "void main()\n"
+                         "{\n"
+                         "   colorIn = color;\n"
+                         "   gl_Position = vec4(pos, 0, 1.0);\n"
+                         "}\n";
+
+
+const char *fragshader = "varying vec4 colorIn;\n"
+                         "void main()\n"
+                         "{\n"
+                         "   gl_FragColor = colorIn; \n"
+                         "}\n";
+#else
 const char *vertshader = "#version 130\n"
                          "in vec2 pos;\n"
                          "in vec4 color;\n"
@@ -49,6 +66,8 @@ const char *fragshader = "#version 130\n"
                          "{\n"
                          "   fragcolor = colorIn; \n"
                          "}\n";
+#endif
+
                          
 
 ///////////////////////////////////////////////////////////
@@ -160,9 +179,10 @@ public:
 
 Scene::Scene() 
 {
-
+#ifndef __arm__
     glGenVertexArrays(1, &vaoID);
     glBindVertexArray(vaoID);
+#endif
 
     progID = glCreateProgram();
     vshaderID = glCreateShader(GL_VERTEX_SHADER);
@@ -174,13 +194,13 @@ Scene::Scene()
     glCompileShader(fshaderID);
     
     GLint compiled, linked;
-    glGetObjectParameterivARB(vshaderID, GL_COMPILE_STATUS, &compiled);
+    glGetShaderiv(vshaderID, GL_COMPILE_STATUS, &compiled);
     if (compiled)
     {
         // yes it compiled!
         std::cout << "Compiled vertshader" << std::endl;
     } 
-    glGetObjectParameterivARB(fshaderID, GL_COMPILE_STATUS, &compiled);
+    glGetShaderiv(fshaderID, GL_COMPILE_STATUS, &compiled);
     if (compiled)
     {
         // yes it compiled!
@@ -188,8 +208,11 @@ Scene::Scene()
     }
     glAttachShader(progID, vshaderID);
     glAttachShader(progID, fshaderID);
+
+#ifndef __arm__
     glBindFragDataLocation(progID, 0, "fragcolor");
-    
+#endif
+
     glLinkProgram(progID);
 
     glGetProgramiv(progID, GL_LINK_STATUS, &linked);
@@ -203,7 +226,9 @@ Scene::Scene()
 Scene::~Scene()
 {
     glBindVertexArray(0);
+#ifndef __arm__
     glDeleteVertexArrays(1, &vaoID);
+#endif
     glDeleteShader(vshaderID);
     glDeleteShader(fshaderID);
     glDeleteProgram(progID);
@@ -227,7 +252,11 @@ inline void EnableVSync()
 }
 inline bool CheckRequiredGLExtension()
 {
+#ifdef __arm__
+    return true;
+#else
     return GL_EXTENSION_EXISTS(GLEW_ARB_vertex_buffer_object);
+#endif
 }
 static void OnResize(GLFWwindow *window, int w, int h)
 {
