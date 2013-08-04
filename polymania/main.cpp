@@ -21,6 +21,7 @@
 #include <iostream>
 #include <type_traits>
 #include <limits>
+#include <memory>
 
 #include "types.hpp"
 
@@ -29,6 +30,19 @@
 #pragma comment(lib, "glfw3.lib")
 #endif
 
+#include "context.hpp"
+#include "controller.hpp"
+#include "timer.hpp"
+
+#ifdef __arm__
+#include "context_rpi.hpp"
+#include "controller_rpi.hpp"
+#include "timer_rpi.hpp"
+#else
+#include "context_glfw.hpp"
+#include "controller_glfw.hpp"
+#include "timer_glfw.hpp"
+#endif
 
 ///////////////////////////////////////////////////////////
 // Shaders
@@ -242,15 +256,6 @@ void Scene::Draw()
 {
 }
 
-inline void EnableVSync()
-{
-#if defined(_WIN32) || defined(WIN32)
-    if(WGLEW_EXT_swap_control)
-        wglSwapIntervalEXT(1);
-#else
-    glfwSwapInterval(1);
-#endif
-}
 inline bool CheckRequiredGLExtension()
 {
 #ifdef __arm__
@@ -270,8 +275,16 @@ static void OnError(int code, const char *err)
     std::cerr << err << std::endl;
 }
 
-static void EngineMain(GLFWwindow *mainWindow)
+static void EngineMain(std::shared_ptr<Context> mainWindow)
 {
+#ifdef __arm__
+    auto timer = std::make_shared<RaspberryPiTimer>();
+    auto ctlr = std::make_shared<RaspberryPiController>();
+#else
+    auto timer = std::make_shared<GlfwTimer>();
+    auto ctlr = std::make_shared<GlfwController>();
+#endif
+
     const F64 SEC_PER_TICK = 1/20.0;
     S32 fpsFrames = 0;
     F64 fpsElapsed = 0.0;
@@ -293,32 +306,16 @@ static void EngineMain(GLFWwindow *mainWindow)
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-    glfwSetTime(0);
     while(running)
     {
-        F64 timeStart = glfwGetTime();
+        F64 timeStart = timer->Seconds();
         
-        glfwPollEvents();
-        
-        if(glfwGetKey(mainWindow, GLFW_KEY_DOWN))
-        {
-            keys.down = true;
-        }
-        if(glfwGetKey(mainWindow, GLFW_KEY_UP))
-        {
-            keys.up = true;
-        }
-        if(glfwGetKey(mainWindow, GLFW_KEY_LEFT))
-        {
-            keys.left = true;
-        }
-        if(glfwGetKey(mainWindow, GLFW_KEY_RIGHT))
-        {
-            keys.right = true;
-        }
+        mainWindow->Poll();
+
+        ctlr->Poll(mainWindow.get());
         
         int frameSkips = 10; // allow up to 8 frame skips
-        while(glfwGetTime() > timeNextTick && frameSkips > 0)
+        while(timer->Seconds() > timeNextTick && frameSkips > 0)
         {
             scene.Update(keys);
             frameSkips--;
@@ -327,13 +324,13 @@ static void EngineMain(GLFWwindow *mainWindow)
         if(frameSkips < 10)
             keys.Reset();
         
-        scene.interp = (glfwGetTime() + SEC_PER_TICK - timeNextTick)/SEC_PER_TICK;
+        scene.interp = (timer->Seconds() + SEC_PER_TICK - timeNextTick)/SEC_PER_TICK;
         
         glClear(GL_COLOR_BUFFER_BIT);
         scene.Draw();
-        glfwSwapBuffers(mainWindow);
+        mainWindow->SwapBuffers();
         
-        timeFrame += (glfwGetTime() - timeStart);
+        timeFrame += (timer->Seconds() - timeStart);
         fpsElapsed += timeFrame;
 
         timeFrame = 0.0;
@@ -346,83 +343,48 @@ static void EngineMain(GLFWwindow *mainWindow)
             fpsFrames = 0;
         }
 
-        // exit if ESC was pressed or window was closed
-        running = !glfwGetKey(mainWindow, GLFW_KEY_ESCAPE) && !glfwWindowShouldClose(mainWindow);
+        // TODO implement quit message
+        //running = !glfwGetKey(mainWindow, GLFW_KEY_ESCAPE) && !glfwWindowShouldClose(mainWindow);
     }
 }
 
-GLFWwindow *CreateContext()
-{
-    GLFWwindow *window=0;
-#ifdef __arm__
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
-
-    glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_ES_API);
-    window = glfwCreateWindow(WIDTH, HEIGHT, "Polymania Project", 0, 0);
-#else
-    // prefer 3.0 forward compat context
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
-    //glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    //glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_COMPAT_PROFILE);
-    glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, 0);
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, 1); //forward compatibility removes deprecated functions
-    window = glfwCreateWindow(WIDTH, HEIGHT, "Polymania Project", 0, 0);
-
-    if(!window)
-    {
-        // select 3.2 core as fall back
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
-        glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, 0);
-        window = glfwCreateWindow(WIDTH, HEIGHT, "Polymania Project", 0, 0);
-    }
-    if(!window)
-    {
-        // finally try 3.1 forward compat as fall back
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
-        glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, 1);
-        window = glfwCreateWindow(WIDTH, HEIGHT, "Polymania Project", 0, 0);
-    }
-
-#endif
-
-    return window;
-}
 int main()
 {
-    glfwInit();
-    glfwSetErrorCallback(&OnError);
-    glfwDefaultWindowHints();
+#ifdef __arm__
+    auto ctx = std::make_shared<RaspberryPiContext>();
+#else
+    auto ctx = std::make_shared<GlfwContext>();
+#endif
 
-    GLFWwindow *mainWindow = CreateContext();
-
-    if(!mainWindow)
-    {
-        std::cerr << "failed to create gl context" << std::endl;
-        glfwTerminate();
-        return 0;
+    if(ctx->Initialize("Polymania Project", WIDTH, HEIGHT, false, false) < 0) {
+        std::cerr << "Failed to initialize context" << std::endl;
+        return -1;
     }
 
-    glfwMakeContextCurrent(mainWindow);
+    ctx->MakeCurrent();
+
 #ifndef __arm__
     if(glewInit() != GLEW_OK)
     {
         std::cerr << "Failed to init glew" << std::endl;
     }
-#endif
+
     if(!CheckRequiredGLExtension())
     {
         std::cerr << "One or more extension is not found" << std::endl;
     }
+#endif
+
     std::cout << "Renderer: " << (const char*)glGetString(GL_RENDERER) << std::endl;
     std::cout << "Version: " << (const char*)glGetString(GL_VERSION) << std::endl;
-    OnResize(mainWindow, WIDTH, HEIGHT);
-    glfwSetWindowSizeCallback(mainWindow, &OnResize);
+    
+    // TODO implement resize message
+    //OnResize(mainWindow, WIDTH, HEIGHT);
+    //glfwSetWindowSizeCallback(mainWindow, &OnResize);
 
-    EngineMain(mainWindow);
+    EngineMain(ctx);
 
-    glfwTerminate();
+    ctx->Terminate();
 
     return 0;
 }

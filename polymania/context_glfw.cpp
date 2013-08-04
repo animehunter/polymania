@@ -60,7 +60,10 @@ int GlfwContext::Initialize(const char *hintTitle, int hintWidth, int hintHeight
     glfwDefaultWindowHints();
 
     context = CreateContext(hintTitle, hintWidth, hintHeight, hintFullscreen);
-    if(!context) return -1;
+    if(!context) {
+        glfwTerminate();
+        return -1;
+    }
 
     vsync = hintVerticalSync;
     if(vsync) EnableVSync();
@@ -81,8 +84,16 @@ int GlfwContext::MakeCurrent() {
     return 0;
 }
 
+int GlfwContext::Poll() {
+    glfwPollEvents();
+    return 0;
+}
+
 int GlfwContext::Terminate() {
     glfwTerminate();
     return 0;
 }
 
+GLFWwindow *GlfwContext::GetGlfwWindow() {
+    return context;
+}
