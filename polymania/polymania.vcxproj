@@ -77,12 +77,17 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\external\glew.c" />
+    <ClCompile Include="context_glfw.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="shader.cpp" />
+    <ClCompile Include="timer_glfw.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="shader.h" />
-    <ClInclude Include="types.h" />
+    <ClInclude Include="context_glfw.hpp" />
+    <ClInclude Include="shader.hpp" />
+    <ClInclude Include="timer.hpp" />
+    <ClInclude Include="timer_glfw.hpp" />
+    <ClInclude Include="types.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

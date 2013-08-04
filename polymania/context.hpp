@@ -4,7 +4,8 @@
 
 class Context {
 public:
-    virtual int Initialize(int hintWidth, int hintHeight, bool hintFullscreen, bool hintVerticalSync) = 0;
+    virtual int Initialize(const char *hintTitle, int hintWidth, int hintHeight, bool hintFullscreen, bool hintVerticalSync) = 0;
     virtual int SwapBuffers() = 0;
+    virtual int MakeCurrent() = 0;
     virtual int Terminate() = 0;
 };

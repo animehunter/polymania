@@ -23,8 +23,7 @@ int RaspberryPiContext::Initialize(int hintWidth, int hintHeight, bool hintFulls
     VC_RECT_T src_rect;
 
     // Framebuffer configuration
-    static const EGLint framebuffer_attrs[] =
-    {
+    static const EGLint framebuffer_attrs[] = {
       EGL_RED_SIZE, 8,
       EGL_GREEN_SIZE, 8,
       EGL_BLUE_SIZE, 8,

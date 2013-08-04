@@ -22,7 +22,7 @@
 #include <type_traits>
 #include <limits>
 
-#include "types.h"
+#include "types.hpp"
 
 #ifdef _MSC_VER
 #pragma comment(lib, "opengl32.lib")
