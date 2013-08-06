@@ -226,16 +226,12 @@ void Scene::Draw()
 {
 }
 
-
+// TODO add this to message queue
 static void OnResize(GLFWwindow *window, int w, int h)
 {
     GWindowWidth = w;
     GWindowHeight = h;
     glViewport (0, 0, (GLsizei) w, (GLsizei) h);
-}
-static void OnError(int code, const char *err)
-{
-    std::cerr << err << std::endl;
 }
 
 static void EngineMain(std::shared_ptr<Context> mainWindow)
