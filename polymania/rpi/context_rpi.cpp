@@ -22,6 +22,12 @@ int RaspberryPiContext::Initialize(const char *hintTitle, int hintWidth, int hin
     VC_RECT_T dst_rect;
     VC_RECT_T src_rect;
 
+    // Context configuration
+    EGLint context_attrs[] = { 
+        EGL_CONTEXT_CLIENT_VERSION, 2,
+        EGL_NONE
+    };
+
     // Framebuffer configuration
     static const EGLint framebuffer_attrs[] = {
       EGL_RED_SIZE, 8,
@@ -44,8 +50,12 @@ int RaspberryPiContext::Initialize(const char *hintTitle, int hintWidth, int hin
     result = eglChooseConfig(_display, framebuffer_attrs, &config, 1, &config_index);
     if (result == EGL_FALSE) return -1;
 
-    // create an EGL rendering context
-    _context = eglCreateContext(_display, config, EGL_NO_CONTEXT, NULL);
+    // Bind OpenGL ES API 
+    result = eglBindAPI(EGL_OPENGL_ES_API);
+    if (result == EGL_FALSE) return -1;  
+
+    // Create an EGL rendering context
+    _context = eglCreateContext(_display, config, EGL_NO_CONTEXT, context_attrs);
     if (_context == EGL_NO_CONTEXT) return -1;
 
     // Get display size
@@ -89,11 +99,6 @@ int RaspberryPiContext::Initialize(const char *hintTitle, int hintWidth, int hin
 int RaspberryPiContext::SwapBuffers() {
     eglSwapBuffers(_display, _surface);
     return 0;
-}
-
-int RaspberryPiContext::MakeCurrent() {
-    EGLBoolean result = eglMakeCurrent(_display, _surface, _surface, _context);
-    return (result == EGL_FALSE) ? -1 : 0;
 }
 
 int RaspberryPiContext::Poll() {

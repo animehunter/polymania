@@ -65,6 +65,7 @@ int GlfwContext::Initialize(const char *hintTitle, int hintWidth, int hintHeight
         return -1;
     }
 
+    glfwMakeContextCurrent(context);
     vsync = hintVerticalSync;
     if(vsync) EnableVSync();
 
@@ -73,14 +74,6 @@ int GlfwContext::Initialize(const char *hintTitle, int hintWidth, int hintHeight
 
 int GlfwContext::SwapBuffers() {
     glfwSwapBuffers(context);
-    return 0;
-}
-
-
-int GlfwContext::MakeCurrent() {
-    glfwMakeContextCurrent(context);
-    if(vsync) EnableVSync();
-
     return 0;
 }
 

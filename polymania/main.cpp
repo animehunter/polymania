@@ -362,8 +362,6 @@ int main()
         return -1;
     }
 
-    ctx->MakeCurrent();
-
 #ifndef __arm__
     if(glewInit() != GLEW_OK)
     {
