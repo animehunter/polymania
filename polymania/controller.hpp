@@ -1,5 +1,4 @@
-#ifndef controller_h__
-#define controller_h__
+#pragma once
 
 class Context;
 
@@ -7,6 +6,9 @@ struct ControllerPosition {
     int x, y;
 };
 
+/*
+ * Abstract controller
+ */
 class Controller {
 public:
     bool up, down, left, right;
@@ -20,6 +22,4 @@ public:
 
     virtual void Poll(Context *ctx) = 0;
 };
-
-#endif // controller_h__
 

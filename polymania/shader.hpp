@@ -1,6 +1,4 @@
-#ifndef shader_h__
-#define shader_h__
-
+#pragma onfce
 
 class Shader
 {
@@ -9,5 +7,3 @@ public:
 private:
     
 };
-
-#endif // shader_h__

@@ -3,6 +3,7 @@
 
 #ifdef __arm__
 #include <GLES2/gl2.h>
+#include <EGL/egl.h>
 #define GLFW_INCLUDE_ES2
 #else
 #include <GL/glew.h>
@@ -35,13 +36,13 @@
 #include "timer.hpp"
 
 #ifdef __arm__
-#include "context_rpi.hpp"
-#include "controller_rpi.hpp"
-#include "timer_rpi.hpp"
+#include "rpi/context_rpi.hpp"
+#include "rpi/controller_rpi.hpp"
+#include "rpi/timer_rpi.hpp"
 #else
-#include "context_glfw.hpp"
-#include "controller_glfw.hpp"
-#include "timer_glfw.hpp"
+#include "other/context_glfw.hpp"
+#include "other/controller_glfw.hpp"
+#include "other/timer_glfw.hpp"
 #endif
 
 ///////////////////////////////////////////////////////////

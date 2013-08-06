@@ -1,7 +1,8 @@
+#pragma once
+
 /*
  * Abstract OpenGL context
  */
-
 class Context {
 public:
     virtual int Initialize(const char *hintTitle, int hintWidth, int hintHeight, bool hintFullscreen, bool hintVerticalSync) = 0;

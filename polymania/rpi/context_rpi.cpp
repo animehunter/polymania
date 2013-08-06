@@ -1,13 +1,13 @@
-#include "GLES/gl.h"
-#include "EGL/egl.h"
-#include "EGL/eglext.h"
+#include <GLES/gl.h>
+#include <EGL/egl.h>
+#include <EGL/eglext.h>
 
-#include "bcm_host.h"
+#include <bcm_host.h>
 
-#include "context.hpp"
+#include "../context.hpp"
 #include "context_rpi.hpp"
 
-int RaspberryPiContext::Initialize(int hintWidth, int hintHeight, bool hintFullscreen, bool hintVerticalSync) {
+int RaspberryPiContext::Initialize(const char *hintTitle, int hintWidth, int hintHeight, bool hintFullscreen, bool hintVerticalSync) {
     // Initialize the Raspberry Pi GPU
     bcm_host_init();
 
@@ -88,6 +88,15 @@ int RaspberryPiContext::Initialize(int hintWidth, int hintHeight, bool hintFulls
 
 int RaspberryPiContext::SwapBuffers() {
     eglSwapBuffers(_display, _surface);
+    return 0;
+}
+
+int RaspberryPiContext::MakeCurrent() {
+    EGLBoolean result = eglMakeCurrent(_display, _surface, _surface, _context);
+    return (result == EGL_FALSE) ? -1 : 0;
+}
+
+int RaspberryPiContext::Poll() {
     return 0;
 }
 

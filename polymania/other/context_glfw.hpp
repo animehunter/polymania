@@ -1,6 +1,8 @@
-#ifndef context_glfw_h__
-#define context_glfw_h__
+#pragma once
 
+/*
+ * Multi-platform GLFW implementation of the GL context class
+ */
 class GlfwContext: public Context {
 public:
     int Initialize(const char *hintTitle, int hintWidth, int hintHeight, bool hintFullscreen, bool hintVerticalSync);
@@ -15,6 +17,4 @@ private:
     GLFWwindow *context;
     bool vsync;
 };
-
-#endif // context_glfw_h__
 

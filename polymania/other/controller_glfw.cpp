@@ -1,8 +1,8 @@
 #include <GLFW/glfw3.h>
 
-#include "context.hpp"
+#include "../context.hpp"
+#include "../controller.hpp"
 #include "context_glfw.hpp"
-#include "controller.hpp"
 #include "controller_glfw.hpp"
 
 void GlfwController::Poll(Context *ctx) {

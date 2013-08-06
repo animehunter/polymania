@@ -1,14 +1,9 @@
-#ifndef timer_h__
-#define timer_h__
+#pragma once
 
 /*
- * Abstract High Resolution Timer
+ * Abstract high precision RTC
  */
-
 class Timer {
 public:
     virtual double Seconds() = 0;
 };
-
-#endif // timer_h__
-

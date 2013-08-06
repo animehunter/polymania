@@ -1,5 +1,4 @@
-#ifndef TYPES_H
-#define TYPES_H 1
+#pragma once
 
 #include <cstdint>
 #include <limits>
@@ -63,5 +62,3 @@ typedef VF2T<FP> VF2;
 
 const S32 S32_MIN = std::numeric_limits<S32>::min();
 const S32 S32_MAX = std::numeric_limits<S32>::max();
-
-#endif // TYPES_H

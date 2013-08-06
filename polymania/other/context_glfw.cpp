@@ -7,7 +7,7 @@
 
 #include <GLFW/glfw3.h>
 
-#include "context.hpp"
+#include "../context.hpp"
 #include "context_glfw.hpp"
 
 inline GLFWwindow *CreateContext(const char *hintTitle,  int hintWidth, int hintHeight, bool hintFullscreen) {
