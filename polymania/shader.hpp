@@ -1,4 +1,4 @@
-#pragma onfce
+#pragma once
 
 class Shader
 {

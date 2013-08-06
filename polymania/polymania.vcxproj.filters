@@ -16,6 +16,17 @@
     <Filter Include="external">
       <UniqueIdentifier>{e31f0f3d-bef7-4e9a-a980-aa27c4316dff}</UniqueIdentifier>
     </Filter>
+    <Filter Include="other">
+      <UniqueIdentifier>{9568a4b8-0b40-4d98-ba51-2d1c80981b00}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="other\header">
+      <UniqueIdentifier>{8edac7d7-572c-4b3e-b629-87f3591d838d}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="other\source">
+      <UniqueIdentifier>{aee257d0-4117-48b4-98d8-4124c16cde58}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -27,20 +38,17 @@
     <ClCompile Include="..\external\glew.c">
       <Filter>external</Filter>
     </ClCompile>
-    <ClCompile Include="context_glfw.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="other\context_glfw.cpp">
+      <Filter>other\source</Filter>
     </ClCompile>
-    <ClCompile Include="timer_glfw.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="other\controller_glfw.cpp">
+      <Filter>other\source</Filter>
     </ClCompile>
-    <ClCompile Include="controller_glfw.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="other\timer_glfw.cpp">
+      <Filter>other\source</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="context_glfw.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="shader.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -50,14 +58,17 @@
     <ClInclude Include="timer.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="timer_glfw.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="controller.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="controller_glfw.hpp">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="other\context_glfw.hpp">
+      <Filter>other\header</Filter>
+    </ClInclude>
+    <ClInclude Include="other\controller_glfw.hpp">
+      <Filter>other\header</Filter>
+    </ClInclude>
+    <ClInclude Include="other\timer_glfw.hpp">
+      <Filter>other\header</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
