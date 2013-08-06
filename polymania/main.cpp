@@ -19,6 +19,9 @@
 #include <type_traits>
 #include <limits>
 #include <memory>
+#include <string>
+#include <fstream>
+#include <iterator>
 
 #include "types.hpp"
 
@@ -69,22 +72,6 @@ const char *fheader = "#version 130\n"
                       "out vec4 fragColor;\n";
 #endif
 
-const char *vertshader = "IN vec2 pos;\n"
-                         "IN vec4 color;\n"
-                         "OUT vec4 colorIn; \n"
-                         "void main()\n"
-                         "{\n"
-                         "   colorIn = color;\n"
-                         "   gl_Position = vec4(pos, 0, 1.0);\n"
-                         "}\n";
-
-
-const char *fragshader = "IN vec4 colorIn;\n"
-                         "void main()\n"
-                         "{\n"
-                         "   fragColor = colorIn;\n"
-                         "}\n";
-
 
 ///////////////////////////////////////////////////////////
 // Utils
@@ -130,6 +117,15 @@ inline void OrthoMatrix(F32 matrix[16], F32 left, F32 right, F32 bottom, F32 top
     matrix[15] = 1.0f;
 }
 
+inline std::string FileRead(const std::string &path) {
+    std::ifstream f(path);
+
+    if(!f) {
+        return "";
+    }
+    return std::string(std::istreambuf_iterator<char>(f), std::istreambuf_iterator<char>());
+}
+
 ///////////////////////////////////////////////////////////
 
 const int WIDTH = 800;
@@ -173,8 +169,14 @@ Scene::Scene()
     vshaderID = glCreateShader(GL_VERTEX_SHADER);
     fshaderID = glCreateShader(GL_FRAGMENT_SHADER);
     
-    const char *vertSource[] = {vheader, vertshader};
-    const char *fragSource[] = {fheader, fragshader};
+    std::string vertshader = FileRead("shaders/default.vert.glsl");
+    std::string fragshader = FileRead("shaders/default.frag.glsl");
+    if(vertshader.empty() || fragshader.empty()) {
+        std::cerr << "Failed to load shader" << std::endl;
+        return;
+    }
+    const char *vertSource[] = {vheader, vertshader.c_str()};
+    const char *fragSource[] = {fheader, fragshader.c_str()};
 
     glShaderSource(vshaderID, 2, vertSource, 0);
     glShaderSource(fshaderID, 2, fragSource, 0);
