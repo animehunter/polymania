@@ -9,10 +9,6 @@
 #include <GL/glew.h>
 #endif
 
-#if defined(_WIN32) || defined(WIN32)
-#include <GL/wglew.h>
-#endif
-
 #include <GLFW/glfw3.h>
 
 #include <vector>
@@ -48,43 +44,47 @@
 ///////////////////////////////////////////////////////////
 // Shaders
 #ifdef __arm__
-const char *vertshader = "attribute vec2 pos;\n"
-                         "attribute vec4 color;\n"
-                         "varying vec4 colorIn; \n"
-                         "void main()\n"
-                         "{\n"
-                         "   colorIn = color;\n"
-                         "   gl_Position = vec4(pos, 0, 1.0);\n"
-                         "}\n";
+const char *vheader = "#define IN attribute\n"
+                      "#define OUT varying\n"
+                      "precision mediump float\n"
+                      "precision mediump int\n";
 
-
-const char *fragshader = "varying vec4 colorIn;\n"
-                         "void main()\n"
-                         "{\n"
-                         "   gl_FragColor = colorIn; \n"
-                         "}\n";
+const char *fheader = "#define IN varying\n"
+                      "#define fragColor gl_FragColor\n"
+                      "precision mediump float\n"
+                      "precision mediump int\n";
 #else
-const char *vertshader = "#version 130\n"
-                         "in vec2 pos;\n"
-                         "in vec4 color;\n"
-                         "out vec4 colorIn; \n"
-                         "void main()\n"
-                         "{\n"
-                         "   colorIn = color;\n"
-                         "   gl_Position = vec4(pos, 0, 1.0);\n"
-                         "}\n";
+const char *vheader = "#version 130\n"
+                      "#define lowp\n"
+                      "#define mediump\n"
+                      "#define highp\n"
+                      "#define IN in\n"
+                      "#define OUT out\n";
 
-
-const char *fragshader = "#version 130\n"
-                         "in vec4 colorIn;\n"
-                         "out vec4 fragcolor;\n"
-                         "void main()\n"
-                         "{\n"
-                         "   fragcolor = colorIn; \n"
-                         "}\n";
+const char *fheader = "#version 130\n"
+                      "#define lowp\n"
+                      "#define mediump\n"
+                      "#define highp\n"
+                      "#define IN in\n"
+                      "out vec4 fragColor;\n";
 #endif
 
-                         
+const char *vertshader = "IN vec2 pos;\n"
+                         "IN vec4 color;\n"
+                         "OUT vec4 colorIn; \n"
+                         "void main()\n"
+                         "{\n"
+                         "   colorIn = color;\n"
+                         "   gl_Position = vec4(pos, 0, 1.0);\n"
+                         "}\n";
+
+
+const char *fragshader = "IN vec4 colorIn;\n"
+                         "void main()\n"
+                         "{\n"
+                         "   fragColor = colorIn;\n"
+                         "}\n";
+
 
 ///////////////////////////////////////////////////////////
 // Utils
@@ -173,8 +173,11 @@ Scene::Scene()
     vshaderID = glCreateShader(GL_VERTEX_SHADER);
     fshaderID = glCreateShader(GL_FRAGMENT_SHADER);
     
-    glShaderSource(vshaderID, 1, &vertshader, 0);
-    glShaderSource(fshaderID, 1, &fragshader, 0);
+    const char *vertSource[] = {vheader, vertshader};
+    const char *fragSource[] = {fheader, fragshader};
+
+    glShaderSource(vshaderID, 2, vertSource, 0);
+    glShaderSource(fshaderID, 2, fragSource, 0);
     glCompileShader(vshaderID);
     glCompileShader(fshaderID);
     
@@ -195,7 +198,7 @@ Scene::Scene()
     glAttachShader(progID, fshaderID);
 
 #ifndef __arm__
-    glBindFragDataLocation(progID, 0, "fragcolor");
+    glBindFragDataLocation(progID, 0, "fragColor");
 #endif
 
     glLinkProgram(progID);
