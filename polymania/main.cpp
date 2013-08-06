@@ -100,22 +100,6 @@ inline bool FloatInside(F32 a, F32 low, F32 high, const F32 epsilon = std::numer
     return a > (low+epsilon) && a < (high-epsilon);
 }
 
-inline bool GLExtensionExists(GLboolean ext, const char *name)
-{
-    if(!ext)
-    {
-        std::cerr << "Extension does not exist: " << name << std::endl;
-        return false;
-    }
-    else
-    {
-        return true;
-    }
-}
-
-#define GL_EXTENSION_EXISTS(ext) GLExtensionExists(ext, #ext)
-
-
 inline void OrthoMatrix(F32 matrix[16], F32 left, F32 right, F32 bottom, F32 top, F32 znear, F32 zfar)
 {
     F32 r_l = right - left;
@@ -156,26 +140,11 @@ int GWindowHeight = HEIGHT;
 
 class Scene;
 
-
-class Keys
-{
-public:
-    bool up, down, left, right;
-    Keys()
-    {
-        Reset();
-    }
-    void Reset()
-    {
-        up = down = left = right = false;
-    }
-};
-
 class SceneObject
 {
 public:
     virtual ~SceneObject(){};
-    virtual void Update(Scene &scene, const Keys &k)=0;
+    virtual void Update(Scene &scene, std::shared_ptr<Controller> k)=0;
     virtual void Draw(Scene &scene)=0;
 };
 
@@ -189,7 +158,7 @@ public:
     
     Scene();
     ~Scene();
-    void Update(const Keys &k);
+    void Update(std::shared_ptr<Controller> k);
     void Draw();
 };
 
@@ -249,7 +218,7 @@ Scene::~Scene()
     glDeleteShader(fshaderID);
     glDeleteProgram(progID);
 }
-void Scene::Update(const Keys &k)
+void Scene::Update(std::shared_ptr<Controller> k)
 {
 
 }
@@ -257,14 +226,7 @@ void Scene::Draw()
 {
 }
 
-inline bool CheckRequiredGLExtension()
-{
-#ifdef __arm__
-    return true;
-#else
-    return GL_EXTENSION_EXISTS(GLEW_ARB_vertex_buffer_object);
-#endif
-}
+
 static void OnResize(GLFWwindow *window, int w, int h)
 {
     GWindowWidth = w;
@@ -292,11 +254,8 @@ static void EngineMain(std::shared_ptr<Context> mainWindow)
     F64 timeFrame = 0.0;
     F64 timeNextTick = 0.0;
     bool  running = true;
-    Keys keys;
     Scene scene;
-    
-    //EnableVSync();
-    
+
     glDisable(GL_DEPTH_TEST); 
     glDisable(GL_BLEND);
     glDisable(GL_DITHER);     
@@ -318,12 +277,12 @@ static void EngineMain(std::shared_ptr<Context> mainWindow)
         int frameSkips = 10; // allow up to 8 frame skips
         while(timer->Seconds() > timeNextTick && frameSkips > 0)
         {
-            scene.Update(keys);
+            scene.Update(ctlr);
             frameSkips--;
             timeNextTick += SEC_PER_TICK;
         }
         if(frameSkips < 10)
-            keys.Reset();
+            ctlr->Reset();
         
         scene.interp = (timer->Seconds() + SEC_PER_TICK - timeNextTick)/SEC_PER_TICK;
         
@@ -362,17 +321,6 @@ int main()
         return -1;
     }
 
-#ifndef __arm__
-    if(glewInit() != GLEW_OK)
-    {
-        std::cerr << "Failed to init glew" << std::endl;
-    }
-
-    if(!CheckRequiredGLExtension())
-    {
-        std::cerr << "One or more extension is not found" << std::endl;
-    }
-#endif
 
     std::cout << "Renderer: " << (const char*)glGetString(GL_RENDERER) << std::endl;
     std::cout << "Version: " << (const char*)glGetString(GL_VERSION) << std::endl;

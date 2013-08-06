@@ -7,17 +7,30 @@
 
 void GlfwController::Poll(Context *ctx) {
     GlfwContext *gctx = static_cast<GlfwContext*>(ctx);
-    if(glfwGetKey(gctx->GetGlfwWindow(), GLFW_KEY_DOWN)) {
+    if(glfwGetKey(gctx->GetGlfwWindow(), GLFW_KEY_S)) {
         down = true;
     }
-    if(glfwGetKey(gctx->GetGlfwWindow(), GLFW_KEY_UP)) {
+    if(glfwGetKey(gctx->GetGlfwWindow(), GLFW_KEY_W)) {
         up = true;
     }
-    if(glfwGetKey(gctx->GetGlfwWindow(), GLFW_KEY_LEFT)) {
+    if(glfwGetKey(gctx->GetGlfwWindow(), GLFW_KEY_A)) {
         left = true;
     }
-    if(glfwGetKey(gctx->GetGlfwWindow(), GLFW_KEY_RIGHT)) {
+    if(glfwGetKey(gctx->GetGlfwWindow(), GLFW_KEY_D)) {
         right = true;
+    }
+
+    if(glfwGetKey(gctx->GetGlfwWindow(), GLFW_KEY_4)) {
+        a = true;
+    }
+    if(glfwGetKey(gctx->GetGlfwWindow(), GLFW_KEY_5)) {
+        b = true;
+    }
+    if(glfwGetKey(gctx->GetGlfwWindow(), GLFW_KEY_1)) {
+        x = true;
+    }
+    if(glfwGetKey(gctx->GetGlfwWindow(), GLFW_KEY_2)) {
+        y = true;
     }
 }
 

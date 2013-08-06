@@ -1,7 +1,8 @@
 #include <iostream>
 
-#if defined(_WIN32) || defined(WIN32)
 #include <GL/glew.h>
+
+#if defined(_WIN32) || defined(WIN32)
 #include <GL/wglew.h>
 #endif
 
@@ -9,6 +10,8 @@
 
 #include "../context.hpp"
 #include "context_glfw.hpp"
+
+#define GL_EXTENSION_EXISTS(ext) GLExtensionExists(ext, #ext)
 
 inline GLFWwindow *CreateContext(const char *hintTitle,  int hintWidth, int hintHeight, bool hintFullscreen) {
     GLFWwindow *window=0;
@@ -35,12 +38,23 @@ inline GLFWwindow *CreateContext(const char *hintTitle,  int hintWidth, int hint
         window = glfwCreateWindow(hintWidth, hintHeight, hintTitle, 0, 0);
     }
 
-
     return window;
 }
 
-inline void EnableVSync()
-{
+inline bool GLExtensionExists(GLboolean ext, const char *name) {
+    if(!ext) {
+        std::cerr << "Extension does not exist: " << name << std::endl;
+        return false;
+    } else {
+        return true;
+    }
+}
+
+inline bool CheckRequiredGLExtension() {
+    return GL_EXTENSION_EXISTS(GLEW_ARB_vertex_buffer_object);
+}
+
+inline void EnableVSync() {
 #if defined(_WIN32) || defined(WIN32)
     if(WGLEW_EXT_swap_control)
         wglSwapIntervalEXT(1);
@@ -49,8 +63,7 @@ inline void EnableVSync()
 #endif
 }
 
-static void OnError(int code, const char *err)
-{
+static void OnError(int code, const char *err) {
     std::cerr << err << std::endl;
 }
 
@@ -66,6 +79,17 @@ int GlfwContext::Initialize(const char *hintTitle, int hintWidth, int hintHeight
     }
 
     glfwMakeContextCurrent(context);
+
+    if(glewInit() != GLEW_OK) {
+        std::cerr << "Failed to init glew" << std::endl;
+        return -1;
+    }
+
+    if(!CheckRequiredGLExtension()) {
+        std::cerr << "One or more extension is not found" << std::endl;
+        return -1;
+    }
+
     vsync = hintVerticalSync;
     if(vsync) EnableVSync();
 
