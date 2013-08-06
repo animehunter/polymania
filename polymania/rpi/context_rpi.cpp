@@ -15,7 +15,6 @@ int RaspberryPiContext::Initialize(const char *hintTitle, int hintWidth, int hin
     EGLBoolean result;
     EGLConfig config;
     EGLint config_index;
-    EGL_DISPMANX_WINDOW_T dispman_window;
     DISPMANX_ELEMENT_HANDLE_T dispman_element;
     DISPMANX_DISPLAY_HANDLE_T dispman_display;
     DISPMANX_UPDATE_HANDLE_T dispman_update;
@@ -80,12 +79,12 @@ int RaspberryPiContext::Initialize(const char *hintTitle, int hintWidth, int hin
         dispman_update, dispman_display, 0/*layer*/, &dst_rect, 0/*src*/, &src_rect,
         DISPMANX_PROTECTION_NONE, 0 /*alpha*/, 0/*clamp*/, (DISPMANX_TRANSFORM_T) 0/*transform*/);
       
-    dispman_window.element = dispman_element;
-    dispman_window.width   = screen_width;
-    dispman_window.height  = screen_height;
+    _window.element = dispman_element;
+    _window.width   = screen_width;
+    _window.height  = screen_height;
     vc_dispmanx_update_submit_sync(dispman_update);
       
-    _surface = eglCreateWindowSurface(_display, config, &dispman_window, NULL);
+    _surface = eglCreateWindowSurface(_display, config, &_window, NULL);
     if (_surface == EGL_NO_SURFACE) return -1;
 
     // Make surface current

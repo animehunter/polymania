@@ -4,6 +4,7 @@
  * Raspberry Pi implementation of the GL context class
  */
 class RaspberryPiContext: public Context {
+    EGL_DISPMANX_WINDOW_T _window;
     EGLDisplay _display;
     EGLSurface _surface;
     EGLContext _context;
@@ -15,4 +16,3 @@ public:
     int Poll();
     int Terminate();
 };
-
