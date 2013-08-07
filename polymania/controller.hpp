@@ -3,7 +3,7 @@
 class Context;
 
 struct ControllerPosition {
-    int x, y;
+    double x, y;
 };
 
 /*
