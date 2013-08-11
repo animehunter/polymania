@@ -10,6 +10,7 @@
 #endif
 
 #include <GLFW/glfw3.h>
+#include <glm/glm.hpp>
 
 #include <vector>
 #include <cstdint>
@@ -85,36 +86,6 @@ inline bool FloatEquals(F32 a, F32 b, const F32 epsilon = std::numeric_limits<F3
 inline bool FloatInside(F32 a, F32 low, F32 high, const F32 epsilon = std::numeric_limits<F32>::epsilon())
 {
     return a > (low+epsilon) && a < (high-epsilon);
-}
-
-inline void OrthoMatrix(F32 matrix[16], F32 left, F32 right, F32 bottom, F32 top, F32 znear, F32 zfar)
-{
-    F32 r_l = right - left;
-    F32 t_b = top - bottom;
-    F32 f_n = zfar - znear;
-    F32 tx = - (right + left) / (right - left);
-    F32 ty = - (top + bottom) / (top - bottom);
-    F32 tz = - (zfar + znear) / (zfar - znear);
-
-    matrix[0] = 2.0f / r_l;
-    matrix[1] = 0.0f;
-    matrix[2] = 0.0f;
-    matrix[3] = tx;
-
-    matrix[4] = 0.0f;
-    matrix[5] = 2.0f / t_b;
-    matrix[6] = 0.0f;
-    matrix[7] = ty;
-
-    matrix[8] = 0.0f;
-    matrix[9] = 0.0f;
-    matrix[10] = 2.0f / f_n;
-    matrix[11] = tz;
-
-    matrix[12] = 0.0f;
-    matrix[13] = 0.0f;
-    matrix[14] = 0.0f;
-    matrix[15] = 1.0f;
 }
 
 inline std::string FileRead(const std::string &path) {
@@ -303,7 +274,7 @@ static void EngineMain(std::shared_ptr<Context> mainWindow)
             fpsElapsed = 0.0;
             fpsFrames = 0;
         }
-
+        
         // TODO implement quit message
         //running = !glfwGetKey(mainWindow, GLFW_KEY_ESCAPE) && !glfwWindowShouldClose(mainWindow);
     }
