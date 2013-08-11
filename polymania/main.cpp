@@ -77,13 +77,13 @@ const char *fheader = "#version 130\n"
 ///////////////////////////////////////////////////////////
 // Utils
 
-inline bool FloatEquals(F32 a, F32 b, const F32 epsilon = std::numeric_limits<F32>::epsilon())
+inline bool FloatEquals(float a, float b, const float epsilon = std::numeric_limits<float>::epsilon())
 {
-    F32 diff = b - a;
+    float diff = b - a;
     return (diff < epsilon) && (diff > -epsilon);
 }
 
-inline bool FloatInside(F32 a, F32 low, F32 high, const F32 epsilon = std::numeric_limits<F32>::epsilon())
+inline bool FloatInside(float a, float low, float high, const float epsilon = std::numeric_limits<float>::epsilon())
 {
     return a > (low+epsilon) && a < (high-epsilon);
 }
@@ -118,10 +118,10 @@ public:
 class Scene
 {
 public:
-    F64 interp; //an interpolation value between the previous and the current frame for the purpose of drawing
+    double interp; //an interpolation value between the previous and the current frame for the purpose of drawing
 
-    U32 progID, vshaderID, fshaderID;
-    U32 vaoID;
+    UInt32 progID, vshaderID, fshaderID;
+    UInt32 vaoID;
     
     Scene();
     ~Scene();
@@ -220,11 +220,11 @@ static void EngineMain(std::shared_ptr<Context> mainWindow)
     auto ctlr = std::make_shared<GlfwController>();
 #endif
 
-    const F64 SEC_PER_TICK = 1/20.0;
-    S32 fpsFrames = 0;
-    F64 fpsElapsed = 0.0;
-    F64 timeFrame = 0.0;
-    F64 timeNextTick = 0.0;
+    const double SEC_PER_TICK = 1/20.0;
+    Int32 fpsFrames = 0;
+    double fpsElapsed = 0.0;
+    double timeFrame = 0.0;
+    double timeNextTick = 0.0;
     bool  running = true;
     Scene scene;
 
@@ -240,7 +240,7 @@ static void EngineMain(std::shared_ptr<Context> mainWindow)
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
     while(running)
     {
-        F64 timeStart = timer->Seconds();
+        double timeStart = timer->Seconds();
         
         mainWindow->Poll();
 
