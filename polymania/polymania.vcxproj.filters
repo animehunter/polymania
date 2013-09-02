@@ -47,6 +47,12 @@
     <ClCompile Include="other\timer_glfw.cpp">
       <Filter>other\source</Filter>
     </ClCompile>
+    <ClCompile Include="object.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="registry.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="shader.hpp">
@@ -69,6 +75,12 @@
     </ClInclude>
     <ClInclude Include="other\timer_glfw.hpp">
       <Filter>other\header</Filter>
+    </ClInclude>
+    <ClInclude Include="context.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="object.hpp">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

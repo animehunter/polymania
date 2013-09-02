@@ -23,6 +23,7 @@
 #include <string>
 #include <fstream>
 #include <iterator>
+#include <queue>
 
 #include "types.hpp"
 
@@ -34,6 +35,7 @@
 #include "context.hpp"
 #include "controller.hpp"
 #include "timer.hpp"
+#include "object.hpp"
 
 #ifdef __arm__
 #include "rpi/context_rpi.hpp"
@@ -104,30 +106,6 @@ const int HEIGHT = 600;
 
 int GWindowWidth = WIDTH;
 int GWindowHeight = HEIGHT;
-
-class Scene;
-
-class SceneObject
-{
-public:
-    virtual ~SceneObject(){};
-    virtual void Update(Scene &scene, std::shared_ptr<Controller> k)=0;
-    virtual void Draw(Scene &scene)=0;
-};
-
-class Scene
-{
-public:
-    double interp; //an interpolation value between the previous and the current frame for the purpose of drawing
-
-    UInt32 progID, vshaderID, fshaderID;
-    UInt32 vaoID;
-    
-    Scene();
-    ~Scene();
-    void Update(std::shared_ptr<Controller> k);
-    void Draw();
-};
 
 Scene::Scene() 
 {
@@ -282,6 +260,8 @@ static void EngineMain(std::shared_ptr<Context> mainWindow)
 
 int main()
 {
+	Object::StaticInit();
+
 #ifdef __arm__
     auto ctx = std::make_shared<RaspberryPiContext>();
 #else
