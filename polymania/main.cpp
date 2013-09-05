@@ -260,7 +260,7 @@ static void EngineMain(std::shared_ptr<Context> mainWindow)
 
 int main()
 {
-	Object::StaticInit();
+    Object::StaticInit();
 
 #ifdef __arm__
     auto ctx = std::make_shared<RaspberryPiContext>();

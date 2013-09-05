@@ -8,22 +8,22 @@
 #include "object.hpp"
 
 class Test : public Object {
-	DECLARE_CLASS(Test)
+    DECLARE_CLASS(Test)
 
 public:
-	void StaticConstructor() {
-		REGISTER_HANDLER(Test, TestEvent)
-	}
+    void StaticConstructor() {
+        REGISTER_HANDLER(Test, TestEvent)
+    }
 
-	bool OnTestEvent(Event &ev){
-		std::cout << "Test::OnTestEvent" << std::endl;
-		return true;
-	}
+    bool OnTestEvent(Event &ev){
+        std::cout << "Test::OnTestEvent" << std::endl;
+        return true;
+    }
 
-	void Update(Scene &scene, std::shared_ptr<Controller> k){}
-	void Draw(Scene &scene){}
+    void Update(Scene &scene, std::shared_ptr<Controller> k){}
+    void Draw(Scene &scene){}
 };
 
 BEGIN_REGISTRATION
-	REGISTER_CLASS(Test)
+    REGISTER_CLASS(Test)
 END_REGISTRATION

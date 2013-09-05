@@ -10,21 +10,21 @@
 std::unordered_map<std::string, Class> Object::globalClasses;
 
 bool Object::StaticInit() {
-	RegisterClasses();
-	for (auto iter = globalClasses.begin();
-		 iter != globalClasses.end();
-		 ++iter)
-	{
-		Object* obj = Object::StaticConstructObject(&iter->second);
-		(obj->*iter->second.constructorStatic)();
-		delete(obj);
-	} return true;
+    RegisterClasses();
+    for (auto iter = globalClasses.begin();
+         iter != globalClasses.end();
+         ++iter)
+    {
+        Object* obj = Object::StaticConstructObject(&iter->second);
+        (obj->*iter->second.constructorStatic)();
+        delete(obj);
+    } return true;
 }
 
 Class* Object::StaticFindClass(const std::string name) {
-	auto iterClass = globalClasses.find(name);
-	if (iterClass == globalClasses.end()) return NULL;
-	return &iterClass->second;
+    auto iterClass = globalClasses.find(name);
+    if (iterClass == globalClasses.end()) return NULL;
+    return &iterClass->second;
 }
 
 Object* Object::StaticConstructObject(Class* cls) {
