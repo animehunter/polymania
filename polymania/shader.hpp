@@ -41,8 +41,7 @@ public:
     void Queue(float x, float y, float z, UInt8 r, UInt8 g, UInt8 b, UInt8 a=255);
     void Queue(const Vertex *inVertices, UInt32 inNumVertices);
     void Clear();
-    void Render(bool clear=true);
-    void SetTransparency(bool enable);
+    void Render(bool hintClear=true);
 
 private:
     void UpsizeBatch();
