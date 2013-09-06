@@ -35,6 +35,7 @@
 #include "context.hpp"
 #include "controller.hpp"
 #include "timer.hpp"
+#include "shader.hpp"
 #include "object.hpp"
 
 #ifdef __arm__
@@ -45,34 +46,6 @@
 #include "other/context_glfw.hpp"
 #include "other/controller_glfw.hpp"
 #include "other/timer_glfw.hpp"
-#endif
-
-///////////////////////////////////////////////////////////
-// Shaders
-#ifdef __arm__
-const char *vheader = "#define IN attribute\n"
-                      "#define OUT varying\n"
-                      "precision mediump float\n"
-                      "precision mediump int\n";
-
-const char *fheader = "#define IN varying\n"
-                      "#define fragColor gl_FragColor\n"
-                      "precision mediump float\n"
-                      "precision mediump int\n";
-#else
-const char *vheader = "#version 130\n"
-                      "#define lowp\n"
-                      "#define mediump\n"
-                      "#define highp\n"
-                      "#define IN in\n"
-                      "#define OUT out\n";
-
-const char *fheader = "#version 130\n"
-                      "#define lowp\n"
-                      "#define mediump\n"
-                      "#define highp\n"
-                      "#define IN in\n"
-                      "out vec4 fragColor;\n";
 #endif
 
 
@@ -99,6 +72,7 @@ inline std::string FileRead(const std::string &path) {
     return std::string(std::istreambuf_iterator<char>(f), std::istreambuf_iterator<char>());
 }
 
+
 ///////////////////////////////////////////////////////////
 
 const int WIDTH = 800;
@@ -109,76 +83,43 @@ int GWindowHeight = HEIGHT;
 
 Scene::Scene() 
 {
-#ifndef __arm__
-    glGenVertexArrays(1, &vaoID);
-    glBindVertexArray(vaoID);
-#endif
-
-    progID = glCreateProgram();
-    vshaderID = glCreateShader(GL_VERTEX_SHADER);
-    fshaderID = glCreateShader(GL_FRAGMENT_SHADER);
-    
     std::string vertshader = FileRead("shaders/default.vert.glsl");
     std::string fragshader = FileRead("shaders/default.frag.glsl");
-    if(vertshader.empty() || fragshader.empty()) {
-        std::cerr << "Failed to load shader" << std::endl;
-        return;
-    }
-    const char *vertSource[] = {vheader, vertshader.c_str()};
-    const char *fragSource[] = {fheader, fragshader.c_str()};
-
-    glShaderSource(vshaderID, 2, vertSource, 0);
-    glShaderSource(fshaderID, 2, fragSource, 0);
-    glCompileShader(vshaderID);
-    glCompileShader(fshaderID);
-    
-    GLint compiled, linked;
-    glGetShaderiv(vshaderID, GL_COMPILE_STATUS, &compiled);
-    if (compiled)
-    {
-        // yes it compiled!
-        std::cout << "Compiled vertshader" << std::endl;
-    } 
-    glGetShaderiv(fshaderID, GL_COMPILE_STATUS, &compiled);
-    if (compiled)
-    {
-        // yes it compiled!
-        std::cout << "Compiled fragshader" << std::endl;
-    }
-    glAttachShader(progID, vshaderID);
-    glAttachShader(progID, fshaderID);
-
-#ifndef __arm__
-    glBindFragDataLocation(progID, 0, "fragColor");
-#endif
-
-    glLinkProgram(progID);
-
-    glGetProgramiv(progID, GL_LINK_STATUS, &linked);
-    if (linked)
-    {
-       std::cout << "Linked prog" << std::endl;
-    }
-    
-    glUseProgram(progID);
+    shader.Initialize(vertshader, fragshader, true);
+    batch.SetShader(shader);
+    Shader::SetBlendFunc(Shader::BLEND_Transparent);
 }
 Scene::~Scene()
 {
-#ifndef __arm__
-    glBindVertexArray(0);
-    glDeleteVertexArrays(1, &vaoID);
-#endif
-    glDeleteShader(vshaderID);
-    glDeleteShader(fshaderID);
-    glDeleteProgram(progID);
+
 }
 void Scene::Update(std::shared_ptr<Controller> k)
 {
-
+    
 }
 void Scene::Draw()
 {
+    batch.Queue( 0.0f,  0.0f, 1.0f, 255, 0, 0, 255);
+    batch.Queue(-0.5f,  0.0f, 1.0f, 0, 255, 0, 200);
+    batch.Queue(-0.5f, -0.5f, 1.0f, 0, 0, 255, 0);
+    batch.Render(true);
 }
+
+struct AutoVao {
+    UInt32 vaoID;
+    AutoVao() {
+#ifndef __arm__
+        glGenVertexArrays(1, &vaoID);
+        glBindVertexArray(vaoID);
+#endif
+    }
+    ~AutoVao() {
+#ifndef __arm__
+        glBindVertexArray(0);
+        glDeleteVertexArrays(1, &vaoID);
+#endif
+    }
+};
 
 // TODO add this to message queue
 static void OnResize(GLFWwindow *window, int w, int h)
@@ -197,7 +138,21 @@ static void EngineMain(std::shared_ptr<Context> mainWindow)
     auto timer = std::make_shared<GlfwTimer>();
     auto ctlr = std::make_shared<GlfwController>();
 #endif
+    
+    // setup GL
+    glDisable(GL_DEPTH_TEST); 
+    glDisable(GL_BLEND);
+    glDisable(GL_DITHER);     
+    glDisable(GL_SCISSOR_TEST); 
+    glDisable(GL_STENCIL_TEST);
 
+    glFrontFace(GL_CCW);
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
+    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+
+
+    AutoVao autoVao; // auto VAO for opengl 3+
     const double SEC_PER_TICK = 1/20.0;
     Int32 fpsFrames = 0;
     double fpsElapsed = 0.0;
@@ -206,16 +161,6 @@ static void EngineMain(std::shared_ptr<Context> mainWindow)
     bool  running = true;
     Scene scene;
 
-    glDisable(GL_DEPTH_TEST); 
-    glDisable(GL_BLEND);
-    glDisable(GL_DITHER);     
-    glDisable(GL_SCISSOR_TEST); 
-    glDisable(GL_STENCIL_TEST);
-    
-    glFrontFace(GL_CCW);
-    glEnable(GL_CULL_FACE);
-    glCullFace(GL_BACK);
-    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
     while(running)
     {
         double timeStart = timer->Seconds();

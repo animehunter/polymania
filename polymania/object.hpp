@@ -79,10 +79,9 @@ class Scene
 {
 public:
     double interp; //an interpolation value between the previous and the current frame for the purpose of drawing
+    RenderBatcher batch;
+    Shader shader;
 
-    UInt32 progID, vshaderID, fshaderID;
-    UInt32 vaoID;
-    
     Scene();
     ~Scene();
     void Update(std::shared_ptr<Controller> k);

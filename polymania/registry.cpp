@@ -5,6 +5,7 @@
 
 #include "types.hpp"
 #include "controller.hpp"
+#include "shader.hpp"
 #include "object.hpp"
 
 class Test : public Object {
