@@ -7,6 +7,7 @@
 #endif
 
 #include <glm/glm.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 #include <cstring>
 #include <vector>
@@ -254,6 +255,54 @@ void Shader::SetUniform(Int32 loc, const glm::ivec4 *xyzw, UInt32 size) {
     glUniform4iv(loc, size, (GLint*)xyzw);
 }
 
+void Shader::SetUniform(Int32 loc, const glm::mat4 &mat) {
+    glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(mat));
+}
+void Shader::SetUniform(Int32 loc, const glm::mat4x3 &mat) {
+    glUniformMatrix4x3fv(loc, 1, GL_FALSE, glm::value_ptr(mat));
+}
+void Shader::SetUniform(Int32 loc, const glm::mat3 &mat) {
+    glUniformMatrix3fv(loc, 1, GL_FALSE, glm::value_ptr(mat));
+}
+
+void Shader::SetUniform(Int32 loc, const float &x) {
+    glUniform1fv(loc, 1, &x);
+}
+void Shader::SetUniform(Int32 loc, const glm::vec2 &xy) {
+    glUniform2fv(loc, 1, glm::value_ptr(xy));
+}
+void Shader::SetUniform(Int32 loc, const glm::vec3 &xyz) {
+    glUniform3fv(loc, 1, glm::value_ptr(xyz));
+}
+void Shader::SetUniform(Int32 loc, const glm::vec4 &xyzw) {
+    glUniform4fv(loc, 1, glm::value_ptr(xyzw));
+}
+
+void Shader::SetUniform(Int32 loc, const UInt32 &x) {
+    glUniform1uiv(loc, 1, &x);
+}
+void Shader::SetUniform(Int32 loc, const glm::uvec2 &xy) {
+    glUniform2uiv(loc, 1, glm::value_ptr(xy));
+}
+void Shader::SetUniform(Int32 loc, const glm::uvec3 &xyz) {
+    glUniform3uiv(loc, 1, glm::value_ptr(xyz));
+}
+void Shader::SetUniform(Int32 loc, const glm::uvec4 &xyzw) {
+    glUniform4uiv(loc, 1, glm::value_ptr(xyzw));
+}
+
+void Shader::SetUniform(Int32 loc, const Int32& x) {
+    glUniform1iv(loc, 1, &x);
+}
+void Shader::SetUniform(Int32 loc, const glm::ivec2 &xy) {
+    glUniform2iv(loc, 1, glm::value_ptr(xy));
+}
+void Shader::SetUniform(Int32 loc, const glm::ivec3 &xyz) {
+    glUniform3iv(loc, 1, glm::value_ptr(xyz));
+}
+void Shader::SetUniform(Int32 loc, const glm::ivec4 &xyzw) {
+    glUniform4iv(loc, 1, glm::value_ptr(xyzw));
+}
 
 void Shader::RemoveProg() {
     glUseProgram(0);

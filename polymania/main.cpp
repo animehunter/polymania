@@ -12,7 +12,6 @@
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
 
 #include <vector>
 #include <cstdint>
@@ -118,8 +117,8 @@ Scene::Scene()  {
     shader.Initialize(vertshader, fragshader, true);
     projectionMatrixLoc = shader.GetUniformLocation("projection");
     modelViewMatrixLoc = shader.GetUniformLocation("modelview");
-    shader.SetUniform(projectionMatrixLoc, &glm::perspective(60.0f, float(GWindowWidth)/float(GWindowHeight), 0.1f, 100.0f));
-    shader.SetUniform(modelViewMatrixLoc, &glm::lookAt(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f)));
+    shader.SetUniform(projectionMatrixLoc, glm::perspective(60.0f, float(GWindowWidth)/float(GWindowHeight), 0.1f, 100.0f));
+    shader.SetUniform(modelViewMatrixLoc, glm::lookAt(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f)));
     batch.SetShader(shader);
 
     batch.Queue( 0.0f,  0.0f, 1.0f, 255, 0, 0, 255);
