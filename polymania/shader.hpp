@@ -27,6 +27,27 @@ public:
     bool Initialize(const std::string &inVertShader, const std::string &inFragShader, bool hintUseProg=false);
     void UseProg();
 
+    Int32 GetUniformLocation(const std::string &name);
+
+    void SetUniform(Int32 loc, const glm::mat4 *mat, UInt32 hintSize=1);
+    void SetUniform(Int32 loc, const glm::mat4x3 *mat, UInt32 hintSize=1);
+    void SetUniform(Int32 loc, const glm::mat3 *mat, UInt32 hintSize=1);
+
+    void SetUniform(Int32 loc, const float *x, UInt32 hintSize=1);
+    void SetUniform(Int32 loc, const glm::vec2 *xy, UInt32 hintSize=1);
+    void SetUniform(Int32 loc, const glm::vec3 *xyz, UInt32 hintSize=1);
+    void SetUniform(Int32 loc, const glm::vec4 *xyzw, UInt32 hintSize=1);
+
+    void SetUniform(Int32 loc, const UInt32 *x, UInt32 hintSize=1);
+    void SetUniform(Int32 loc, const glm::uvec2 *xy, UInt32 hintSize=1);
+    void SetUniform(Int32 loc, const glm::uvec3 *xyz, UInt32 hintSize=1);
+    void SetUniform(Int32 loc, const glm::uvec4 *xyzw, UInt32 hintSize=1);
+
+    void SetUniform(Int32 loc, const Int32 *x, UInt32 hintSize=1);
+    void SetUniform(Int32 loc, const glm::ivec2 *xy, UInt32 hintSize=1);
+    void SetUniform(Int32 loc, const glm::ivec3 *xyz, UInt32 hintSize=1);
+    void SetUniform(Int32 loc, const glm::ivec4 *xyzw, UInt32 hintSize=1);
+
 public:
     UInt32 progId;
 };

@@ -6,6 +6,8 @@
 #include <GL/glew.h>
 #endif
 
+#include <glm/glm.hpp>
+
 #include <cstring>
 #include <vector>
 #include <iostream>
@@ -101,8 +103,7 @@ void RenderBatcher::Clear() {
     nVerts = 0;
 }
 
-void RenderBatcher::Upload(UsageHint hintUsage)
-{
+void RenderBatcher::Upload(UsageHint hintUsage) {
     GLenum hint;
     switch(hintUsage)
     {
@@ -119,8 +120,7 @@ void RenderBatcher::Upload(UsageHint hintUsage)
     glBufferData(GL_ARRAY_BUFFER, verts.size()*sizeof(Vertex), &verts[0], hint);
 }
 
-void RenderBatcher::Draw()
-{
+void RenderBatcher::Draw() {
     glDrawArrays(GL_TRIANGLES, 0, verts.size());
 }
 void RenderBatcher::UploadDraw(bool clear) {
@@ -133,6 +133,8 @@ void RenderBatcher::UploadDraw(bool clear) {
 void RenderBatcher::UpsizeBatch() {
     verts.resize(verts.size() + vertsPerBatch);
 }
+
+//////////////////////////////////////////////////////////////////////////
 
 Shader::Shader() : progId(0) {
 
@@ -199,6 +201,59 @@ bool Shader::Initialize(const std::string &vertshader, const std::string &fragsh
 void Shader::UseProg() {
     glUseProgram(progId);
 }
+
+Int32 Shader::GetUniformLocation( const std::string &name ) {
+    return glGetUniformLocation(progId, name.c_str());
+}
+void Shader::SetUniform( Int32 loc, const glm::mat4 *mat, UInt32 size) {
+    glUniformMatrix4fv(loc, size, GL_FALSE, (GLfloat*)mat);
+}
+void Shader::SetUniform( Int32 loc, const glm::mat4x3 *mat, UInt32 size) {
+    glUniformMatrix4x3fv(loc, size, GL_FALSE, (GLfloat*)mat);
+}
+void Shader::SetUniform( Int32 loc, const glm::mat3 *mat, UInt32 size) {
+    glUniformMatrix3fv(loc, size, GL_FALSE, (GLfloat*)mat);
+}
+
+void Shader::SetUniform(Int32 loc, const float *x, UInt32 size) {
+    glUniform1fv(loc, size, x);
+}
+void Shader::SetUniform(Int32 loc, const glm::vec2 *xy, UInt32 size) {
+    glUniform2fv(loc, size, (GLfloat*)xy);
+}
+void Shader::SetUniform(Int32 loc, const glm::vec3 *xyz, UInt32 size) {
+    glUniform3fv(loc, size, (GLfloat*)xyz);
+}
+void Shader::SetUniform(Int32 loc, const glm::vec4 *xyzw, UInt32 size) {
+    glUniform4fv(loc, size, (GLfloat*)xyzw);
+}
+
+void Shader::SetUniform(Int32 loc, const UInt32 *x, UInt32 size) {
+    glUniform1uiv(loc, size, x);
+}
+void Shader::SetUniform(Int32 loc, const glm::uvec2 *xy, UInt32 size) {
+    glUniform2uiv(loc, size, (GLuint*)xy);
+}
+void Shader::SetUniform(Int32 loc, const glm::uvec3 *xyz, UInt32 size) {
+    glUniform3uiv(loc, size, (GLuint*)xyz);
+}
+void Shader::SetUniform(Int32 loc, const glm::uvec4 *xyzw, UInt32 size) {
+    glUniform4uiv(loc, size, (GLuint*)xyzw);
+}
+
+void Shader::SetUniform(Int32 loc, const Int32* x, UInt32 size) {
+    glUniform1iv(loc, size, x);
+}
+void Shader::SetUniform(Int32 loc, const glm::ivec2 *xy, UInt32 size) {
+    glUniform2iv(loc, size, (GLint*)xy);
+}
+void Shader::SetUniform(Int32 loc, const glm::ivec3 *xyz, UInt32 size) {
+    glUniform3iv(loc, size, (GLint*)xyz);
+}
+void Shader::SetUniform(Int32 loc, const glm::ivec4 *xyzw, UInt32 size) {
+    glUniform4iv(loc, size, (GLint*)xyzw);
+}
+
 
 void Shader::RemoveProg() {
     glUseProgram(0);

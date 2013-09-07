@@ -11,6 +11,8 @@
 
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 #include <vector>
 #include <cstdint>
@@ -52,14 +54,28 @@
 ///////////////////////////////////////////////////////////
 // Utils
 
-inline bool FloatEquals(float a, float b, const float epsilon = std::numeric_limits<float>::epsilon())
-{
+struct AutoVao {
+    UInt32 vaoID;
+    AutoVao() {
+#ifndef __arm__
+        glGenVertexArrays(1, &vaoID);
+        glBindVertexArray(vaoID);
+#endif
+    }
+    ~AutoVao() {
+#ifndef __arm__
+        glBindVertexArray(0);
+        glDeleteVertexArrays(1, &vaoID);
+#endif
+    }
+};
+
+inline bool FloatEquals(float a, float b, const float epsilon = std::numeric_limits<float>::epsilon()) {
     float diff = b - a;
     return (diff < epsilon) && (diff > -epsilon);
 }
 
-inline bool FloatInside(float a, float low, float high, const float epsilon = std::numeric_limits<float>::epsilon())
-{
+inline bool FloatInside(float a, float low, float high, const float epsilon = std::numeric_limits<float>::epsilon()) {
     return a > (low+epsilon) && a < (high-epsilon);
 }
 
@@ -81,13 +97,29 @@ const int HEIGHT = 600;
 int GWindowWidth = WIDTH;
 int GWindowHeight = HEIGHT;
 
-Scene::Scene() 
-{
+class Scene {
+public:
+    double interp; //an interpolation value between the previous and the current frame for the purpose of drawing
+    RenderBatcher batch;
+    Shader shader;
+    Int32 projectionMatrixLoc, modelViewMatrixLoc;
+
+    Scene();
+    ~Scene();
+    void Update(std::shared_ptr<Controller> k);
+    void Draw();
+};
+
+Scene::Scene()  {
     Shader::SetBlendFunc(Shader::BLEND_Transparent);
 
     std::string vertshader = FileRead("shaders/default.vert.glsl");
     std::string fragshader = FileRead("shaders/default.frag.glsl");
     shader.Initialize(vertshader, fragshader, true);
+    projectionMatrixLoc = shader.GetUniformLocation("projection");
+    modelViewMatrixLoc = shader.GetUniformLocation("modelview");
+    shader.SetUniform(projectionMatrixLoc, &glm::perspective(60.0f, float(GWindowWidth)/float(GWindowHeight), 0.1f, 100.0f));
+    shader.SetUniform(modelViewMatrixLoc, &glm::lookAt(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f)));
     batch.SetShader(shader);
 
     batch.Queue( 0.0f,  0.0f, 1.0f, 255, 0, 0, 255);
@@ -95,45 +127,26 @@ Scene::Scene()
     batch.Queue(-0.5f, -0.5f, 1.0f, 0, 0, 255, 0);
     batch.Upload(RenderBatcher::USAGE_Static);
 }
-Scene::~Scene()
-{
+Scene::~Scene() {
 
 }
-void Scene::Update(std::shared_ptr<Controller> k)
-{
-    
+void Scene::Update(std::shared_ptr<Controller> k) {
+
 }
-void Scene::Draw()
-{
+
+void Scene::Draw() {
     batch.Draw();
 }
 
-struct AutoVao {
-    UInt32 vaoID;
-    AutoVao() {
-#ifndef __arm__
-        glGenVertexArrays(1, &vaoID);
-        glBindVertexArray(vaoID);
-#endif
-    }
-    ~AutoVao() {
-#ifndef __arm__
-        glBindVertexArray(0);
-        glDeleteVertexArrays(1, &vaoID);
-#endif
-    }
-};
 
 // TODO add this to message queue
-static void OnResize(GLFWwindow *window, int w, int h)
-{
+static void OnResize(GLFWwindow *window, int w, int h) {
     GWindowWidth = w;
     GWindowHeight = h;
     glViewport (0, 0, (GLsizei) w, (GLsizei) h);
 }
 
-static void EngineMain(std::shared_ptr<Context> mainWindow)
-{
+static void EngineMain(std::shared_ptr<Context> mainWindow) {
 #ifdef __arm__
     auto timer = std::make_shared<RaspberryPiTimer>();
     auto ctlr = std::make_shared<RaspberryPiController>();
@@ -143,11 +156,16 @@ static void EngineMain(std::shared_ptr<Context> mainWindow)
 #endif
     
     // setup GL
-    glDisable(GL_DEPTH_TEST); 
     glDisable(GL_BLEND);
     glDisable(GL_DITHER);     
     glDisable(GL_SCISSOR_TEST); 
     glDisable(GL_STENCIL_TEST);
+
+    glEnable(GL_DEPTH_TEST);
+    glDepthMask(GL_TRUE);
+    glDepthFunc(GL_LESS); //use GL_LEQUAL for multipass shaders
+    glDepthRange(0.0f, 1.0f);
+    glClearDepth(1.0f);
 
     glFrontFace(GL_CCW);
     glEnable(GL_CULL_FACE);
@@ -164,8 +182,7 @@ static void EngineMain(std::shared_ptr<Context> mainWindow)
     bool  running = true;
     Scene scene;
 
-    while(running)
-    {
+    while(running) {
         double timeStart = timer->Seconds();
         
         mainWindow->Poll();
@@ -173,8 +190,7 @@ static void EngineMain(std::shared_ptr<Context> mainWindow)
         ctlr->Poll(mainWindow.get());
         
         int frameSkips = 10; // allow up to 8 frame skips
-        while(timer->Seconds() > timeNextTick && frameSkips > 0)
-        {
+        while(timer->Seconds() > timeNextTick && frameSkips > 0) {
             scene.Update(ctlr);
             frameSkips--;
             timeNextTick += SEC_PER_TICK;
@@ -184,7 +200,7 @@ static void EngineMain(std::shared_ptr<Context> mainWindow)
         
         scene.interp = (timer->Seconds() + SEC_PER_TICK - timeNextTick)/SEC_PER_TICK;
         
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
         scene.Draw();
         mainWindow->SwapBuffers();
         
@@ -194,8 +210,7 @@ static void EngineMain(std::shared_ptr<Context> mainWindow)
         timeFrame = 0.0;
 
         ++fpsFrames;
-        if(fpsElapsed >= 3.0)
-        {
+        if(fpsElapsed >= 3.0) {
             std::cout << (fpsFrames/fpsElapsed) << std::endl;
             fpsElapsed = 0.0;
             fpsFrames = 0;
@@ -206,8 +221,7 @@ static void EngineMain(std::shared_ptr<Context> mainWindow)
     }
 }
 
-int main()
-{
+int main() {
     Object::StaticInit();
 
 #ifdef __arm__

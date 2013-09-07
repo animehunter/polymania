@@ -75,18 +75,6 @@ public:
     Class* GetClass() {return _class;}
 };
 
-class Scene
-{
-public:
-    double interp; //an interpolation value between the previous and the current frame for the purpose of drawing
-    RenderBatcher batch;
-    Shader shader;
-
-    Scene();
-    ~Scene();
-    void Update(std::shared_ptr<Controller> k);
-    void Draw();
-};
 
 #define DECLARE_CLASS(TClass)                                                  \
     public:                                                                   \
