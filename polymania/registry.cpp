@@ -7,13 +7,11 @@
 #include "controller.hpp"
 #include "object.hpp"
 
-class Test : public Object {
-    DECLARE_CLASS(Test)
-
+class Test : public DeclaredClass<Test> {
 public:
-    void StaticConstructor() {
-        REGISTER_HANDLER(Test, TestEvent)
-    }
+    HANDLER_BEGIN_REGISTRATION
+        HANDLER_REGISTER(TestEvent)
+    HANDLER_END_REGISTRATION
 
     bool OnTestEvent(Event &ev){
         std::cout << "Test::OnTestEvent" << std::endl;
@@ -24,6 +22,6 @@ public:
     void Draw(Scene &scene){}
 };
 
-BEGIN_REGISTRATION
-    REGISTER_CLASS(Test)
-END_REGISTRATION
+CLASS_BEGIN_REGISTRATION
+    CLASS_REGISTER(Test)
+CLASS_END_REGISTRATION

@@ -227,6 +227,9 @@ static void EngineMain(std::shared_ptr<Context> mainWindow) {
 
 int main() {
     Object::StaticInit();
+    Object* testInstance = Object::StaticConstructObject(Object::StaticFindClass("Test"));
+    if(testInstance) testInstance->Send(Event("TestEvent"));
+    if(testInstance) testInstance->Send(Event("BadEventName"));
 
 #ifdef __arm__
     auto ctx = std::make_shared<RaspberryPiContext>();

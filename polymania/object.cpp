@@ -1,6 +1,7 @@
 #include <memory>
 #include <string>
 #include <unordered_map>
+#include <iostream>
 
 #include "types.hpp"
 #include "controller.hpp"
@@ -10,7 +11,7 @@
 std::unordered_map<std::string, Class> Object::globalClasses;
 
 bool Object::StaticInit() {
-    RegisterClasses();
+    StaticRegisterClasses();
     for (auto iter = globalClasses.begin();
          iter != globalClasses.end();
          ++iter)
@@ -28,6 +29,9 @@ Class* Object::StaticFindClass(const std::string name) {
 }
 
 Object* Object::StaticConstructObject(Class* cls) {
+    // Null check
+    if(!cls) return NULL;
+
     // Allocate the object
     Object *O = (Object*) new char[(Int32) cls->size];
 
