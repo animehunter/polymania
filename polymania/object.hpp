@@ -83,7 +83,7 @@ public:
         auto it = GetClass()->handlers.find(ev.type);
         // If the event couldn't be found
         if(it == GetClass()->handlers.end()) {
-            std::cerr << "Warning: Class " << GetClass()->name << " has not event " << ev.type << "!" << std::endl;
+            std::cerr << "Warning: Class " << GetClass()->name << " has no event " << ev.type << "!" << std::endl;
         }
         // Otherwise fire off the event
         else (this->*(it->second))(ev);
