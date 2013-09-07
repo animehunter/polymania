@@ -102,6 +102,7 @@ public:
     RenderBatcher batch;
     Shader shader;
     Int32 projectionMatrixLoc, modelViewMatrixLoc;
+    float camx, camy;
 
     Scene();
     ~Scene();
@@ -109,7 +110,7 @@ public:
     void Draw();
 };
 
-Scene::Scene()  {
+Scene::Scene() : camx(0), camy(0) {
     Shader::SetBlendFunc(Shader::BLEND_Transparent);
 
     std::string vertshader = FileRead("shaders/default.vert.glsl");
@@ -118,7 +119,7 @@ Scene::Scene()  {
     projectionMatrixLoc = shader.GetUniformLocation("projection");
     modelViewMatrixLoc = shader.GetUniformLocation("modelview");
     shader.SetUniform(projectionMatrixLoc, glm::perspective(60.0f, float(GWindowWidth)/float(GWindowHeight), 0.1f, 100.0f));
-    shader.SetUniform(modelViewMatrixLoc, glm::lookAt(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f)));
+    shader.SetUniform(modelViewMatrixLoc, glm::lookAt(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(camx, camy, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f)));
     batch.SetShader(shader);
 
     batch.Queue( 0.0f,  0.0f, 1.0f, 255, 0, 0, 255);
@@ -130,7 +131,11 @@ Scene::~Scene() {
 
 }
 void Scene::Update(std::shared_ptr<Controller> k) {
-
+    if(k->left) camx -= 0.1f;
+    if(k->right) camx += 0.1f;
+    if(k->up) camy += 0.1f;
+    if(k->down) camy -= 0.1f;
+    shader.SetUniform(modelViewMatrixLoc, glm::lookAt(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(camx, camy, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f)));
 }
 
 void Scene::Draw() {
