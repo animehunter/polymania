@@ -101,9 +101,32 @@ void RenderBatcher::Clear() {
     nVerts = 0;
 }
 
-void RenderBatcher::Render(bool clear) {
-    glBufferData(GL_ARRAY_BUFFER, verts.size()*sizeof(Vertex), &verts[0], GL_STREAM_DRAW);
+void RenderBatcher::Upload(UsageHint hintUsage)
+{
+    GLenum hint;
+    switch(hintUsage)
+    {
+        case USAGE_Stream:
+            hint = GL_STREAM_DRAW;
+            break;
+        case USAGE_Dynamic:
+            hint = GL_DYNAMIC_DRAW;
+            break;
+        case USAGE_Static:
+            hint = GL_STATIC_DRAW;
+            break;
+    }
+    glBufferData(GL_ARRAY_BUFFER, verts.size()*sizeof(Vertex), &verts[0], hint);
+}
+
+void RenderBatcher::Draw()
+{
     glDrawArrays(GL_TRIANGLES, 0, verts.size());
+}
+void RenderBatcher::Render(bool clear) {
+    
+    Upload(USAGE_Stream);
+    Draw();
     if(clear) Clear();
 }
 

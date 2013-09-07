@@ -33,6 +33,13 @@ public:
 
 class RenderBatcher {
 public:
+    enum UsageHint {
+        USAGE_Stream,
+        USAGE_Static,
+        USAGE_Dynamic
+    };
+
+public:
     RenderBatcher(UInt32 inVerticesPerBatch=DEFAULT_VERTICES_PER_BATCH);
     ~RenderBatcher();
 
@@ -41,6 +48,8 @@ public:
     void Queue(float x, float y, float z, UInt8 r, UInt8 g, UInt8 b, UInt8 a=255);
     void Queue(const Vertex *inVertices, UInt32 inNumVertices);
     void Clear();
+    void Upload(UsageHint hintUsage=USAGE_Stream);
+    void Draw();
     void Render(bool hintClear=true);
 
 private:

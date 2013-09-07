@@ -83,11 +83,17 @@ int GWindowHeight = HEIGHT;
 
 Scene::Scene() 
 {
+    Shader::SetBlendFunc(Shader::BLEND_Transparent);
+
     std::string vertshader = FileRead("shaders/default.vert.glsl");
     std::string fragshader = FileRead("shaders/default.frag.glsl");
     shader.Initialize(vertshader, fragshader, true);
     batch.SetShader(shader);
-    Shader::SetBlendFunc(Shader::BLEND_Transparent);
+
+    batch.Queue( 0.0f,  0.0f, 1.0f, 255, 0, 0, 255);
+    batch.Queue(-0.5f,  0.0f, 1.0f, 0, 255, 0, 200);
+    batch.Queue(-0.5f, -0.5f, 1.0f, 0, 0, 255, 0);
+    batch.Upload(RenderBatcher::USAGE_Static);
 }
 Scene::~Scene()
 {
@@ -99,10 +105,7 @@ void Scene::Update(std::shared_ptr<Controller> k)
 }
 void Scene::Draw()
 {
-    batch.Queue( 0.0f,  0.0f, 1.0f, 255, 0, 0, 255);
-    batch.Queue(-0.5f,  0.0f, 1.0f, 0, 255, 0, 200);
-    batch.Queue(-0.5f, -0.5f, 1.0f, 0, 0, 255, 0);
-    batch.Render(true);
+    batch.Draw();
 }
 
 struct AutoVao {
