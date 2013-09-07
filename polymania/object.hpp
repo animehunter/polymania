@@ -11,6 +11,7 @@ struct MetaField {
         TYPE_Integer64,
         TYPE_Boolean,
         TYPE_Floating,
+        TYPE_Floating64,
         TYPE_String
     };
 
@@ -20,6 +21,7 @@ struct MetaField {
         Int64 integer64;
         Int32 boolean;
         float floating;
+        double floating64;
     };
     std::string string;
 };
