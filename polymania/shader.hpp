@@ -50,7 +50,7 @@ public:
     void Clear();
     void Upload(UsageHint hintUsage=USAGE_Stream);
     void Draw();
-    void Render(bool hintClear=true);
+    void UploadDraw(bool hintClear=true);
 
 private:
     void UpsizeBatch();

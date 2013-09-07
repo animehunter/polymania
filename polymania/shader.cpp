@@ -123,7 +123,7 @@ void RenderBatcher::Draw()
 {
     glDrawArrays(GL_TRIANGLES, 0, verts.size());
 }
-void RenderBatcher::Render(bool clear) {
+void RenderBatcher::UploadDraw(bool clear) {
     
     Upload(USAGE_Stream);
     Draw();
