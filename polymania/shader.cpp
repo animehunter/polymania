@@ -11,6 +11,8 @@
 
 #include <cstring>
 #include <vector>
+#include <string>
+#include <unordered_map>
 #include <iostream>
 #include <fstream>
 
@@ -65,8 +67,8 @@ RenderBatcher::~RenderBatcher() {
 void RenderBatcher::SetShader(const Shader &s) {
     shader = &s;
     glBindBuffer(GL_ARRAY_BUFFER, vboId);
-    UInt32 posIdx = glGetAttribLocation(shader->progId, "pos");
-    UInt32 colorIdx = glGetAttribLocation(shader->progId, "color");
+    Int32 posIdx = shader->GetAttributeLocation("pos");
+    Int32 colorIdx = shader->GetAttributeLocation("color");
     glEnableVertexAttribArray(posIdx); //pos
     glEnableVertexAttribArray(colorIdx); //color
     glVertexAttribPointer(posIdx, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), 0);
@@ -106,8 +108,7 @@ void RenderBatcher::Clear() {
 
 void RenderBatcher::Upload(UsageHint hintUsage) {
     GLenum hint;
-    switch(hintUsage)
-    {
+    switch(hintUsage) {
         case USAGE_Stream:
             hint = GL_STREAM_DRAW;
             break;
@@ -142,7 +143,7 @@ Shader::Shader() : progId(0) {
 }
 
 Shader::~Shader() {
-    RemoveProg();
+    Detach();
     if(progId > 0) glDeleteProgram(progId);
 }
 
@@ -191,6 +192,48 @@ bool Shader::Initialize(const std::string &vertshader, const std::string &fragsh
         std::cerr << "Failed to link prog" << std::endl;
         return false;
     }
+
+    uniforms.clear();
+    attributes.clear();
+
+    Int32 uniformMaxLen=0, activeUniforms=0;
+    glGetProgramiv(progId, GL_ACTIVE_UNIFORM_MAX_LENGTH, &uniformMaxLen);
+    glGetProgramiv(progId, GL_ACTIVE_UNIFORMS, &activeUniforms);
+    if(activeUniforms > 0 && uniformMaxLen > 0) {
+        std::vector<char> buf;
+        buf.resize(uniformMaxLen);
+        for(Int32 i=0;i<activeUniforms;++i) {
+            UInt32 type;
+            Int32 size;
+            glGetActiveUniform(progId, i, uniformMaxLen, 0, &size, &type, &buf[0]);
+            UniformDescription u;
+            u.name = &buf[0];
+            u.size = size;
+            u.type = type;
+            u.location = glGetUniformLocation(progId, u.name.c_str());
+            uniforms[u.name] = u;
+        }
+    }
+
+    Int32 attribMaLen=0, activeAttributes=0;
+    glGetProgramiv(progId, GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, &attribMaLen);
+    glGetProgramiv(progId, GL_ACTIVE_ATTRIBUTES, &activeAttributes);
+    if(activeAttributes > 0 && attribMaLen > 0) {
+        std::vector<char> buf;
+        buf.resize(attribMaLen);
+        for(Int32 i=0;i<activeAttributes;++i) {
+            UInt32 type;
+            Int32 size;
+            glGetActiveAttrib(progId, i, attribMaLen, 0, &size, &type, &buf[0]);
+            AttributeDescription a;
+            a.name = &buf[0];
+            a.size = size;
+            a.type = type;
+            a.location = glGetAttribLocation(progId, a.name.c_str());
+            attributes[a.name] = a;
+        }
+    }
+
     glDeleteShader(vshaderId);
     glDeleteShader(fshaderId);
 
@@ -199,13 +242,46 @@ bool Shader::Initialize(const std::string &vertshader, const std::string &fragsh
     return true;
 }
 
-void Shader::UseProg() {
+void Shader::Attach() {
     glUseProgram(progId);
 }
 
-Int32 Shader::GetUniformLocation( const std::string &name ) {
-    return glGetUniformLocation(progId, name.c_str());
+void Shader::PrintInfo() {
+    std::cout << "Uniforms: " << std::endl;
+    for (auto it=uniforms.begin();it != uniforms.end();++it) {
+        UniformDescription &u = it->second;
+        std::cout << 
+            u.name << ": "
+            "type="<< u.type << " "
+            "size=" << u.size << " "
+            "location=" << u.location << std::endl;
+    }
+    std::cout << std::endl;
+
+    std::cout << "Attributes: " << std::endl;
+    for (auto it=attributes.begin();it != attributes.end();++it) {
+        AttributeDescription &a = it->second;
+        std::cout << 
+            a.name << ": "
+            "type="<< a.type << " "
+            "size=" << a.size << " "
+            "location=" << a.location << std::endl;
+    }
+    std::cout << std::endl;
 }
+
+Int32 Shader::GetUniformLocation( const std::string &name ) const {
+    auto it = uniforms.find(name);
+    if(it != uniforms.end()) return it->second.location;
+    else return -1;
+}
+
+Int32 Shader::GetAttributeLocation( const std::string &name ) const {
+    auto it = attributes.find(name);
+    if(it != attributes.end()) return it->second.location;
+    else return -1;
+}
+
 void Shader::SetUniform( Int32 loc, const glm::mat4 *mat, UInt32 size) {
     glUniformMatrix4fv(loc, size, GL_FALSE, (GLfloat*)mat);
 }
@@ -304,7 +380,7 @@ void Shader::SetUniform(Int32 loc, const glm::ivec4 &xyzw) {
     glUniform4iv(loc, 1, glm::value_ptr(xyzw));
 }
 
-void Shader::RemoveProg() {
+void Shader::Detach() {
     glUseProgram(0);
 }
 

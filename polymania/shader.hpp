@@ -7,6 +7,34 @@ struct Vertex {
     UInt8 r,g,b,a; // Native GL format, RGBA 32bits
 };
 
+struct UniformDescription {
+    std::string name;
+    Int32 location;
+    UInt32 type;
+    Int32 size;
+};
+
+struct AttributeDescription {
+    std::string name;
+    Int32 location;
+    UInt32 type;
+    Int32 size;
+};
+
+template<typename T>
+struct UniformArray {
+    const T *base;
+    UInt32 size;
+};
+
+template<typename T>
+UniformArray<T> MakeUniformArray(const T *inBase, UInt32 hintSize) {
+    UniformArray<T> u;
+    u.base = inBase;
+    u.size = hintSize;
+    return u;
+}
+
 class Shader {
 public:
     enum BlendFunc {
@@ -14,8 +42,26 @@ public:
         BLEND_Transparent
     };
 
+private:
+    struct UniformProxy {
+        Int32 uniformLocation;
+
+        UniformProxy(Int32 uniformLocation) : uniformLocation(uniformLocation) {}
+
+        template<typename T>
+        UniformProxy &operator=(const T val) {
+            SetUniform(uniformLocation, val);
+            return *this;
+        }
+        template<typename T>
+        UniformProxy &operator=(const UniformArray<T> &val) {
+            SetUniform(uniformLocation, val.base, val.size);
+            return *this;
+        }
+    };
+
 public:
-    static void RemoveProg();
+    static void Detach();
     static void SetBlendFunc(BlendFunc inBlend);
     static bool blendEnabled;
 
@@ -25,50 +71,58 @@ public:
 
 public:
     bool Initialize(const std::string &inVertShader, const std::string &inFragShader, bool hintUseProg=false);
-    void UseProg();
+    void Attach();
+    void PrintInfo();
+    Int32 GetUniformLocation(const std::string &name) const;
+    Int32 GetAttributeLocation(const std::string &name) const;
 
-    Int32 GetUniformLocation(const std::string &name);
+    UniformProxy operator[](const std::string &name) const {
+        return UniformProxy (GetUniformLocation(name));
+    }
 
-    void SetUniform(Int32 loc, const glm::mat4 *mat, UInt32 hintSize);
-    void SetUniform(Int32 loc, const glm::mat4x3 *mat, UInt32 hintSize);
-    void SetUniform(Int32 loc, const glm::mat3 *mat, UInt32 hintSize);
+public:
+    static void SetUniform(Int32 loc, const glm::mat4 *mat, UInt32 hintSize);
+    static void SetUniform(Int32 loc, const glm::mat4x3 *mat, UInt32 hintSize);
+    static void SetUniform(Int32 loc, const glm::mat3 *mat, UInt32 hintSize);
 
-    void SetUniform(Int32 loc, const float *x, UInt32 hintSize);
-    void SetUniform(Int32 loc, const glm::vec2 *xy, UInt32 hintSize);
-    void SetUniform(Int32 loc, const glm::vec3 *xyz, UInt32 hintSize);
-    void SetUniform(Int32 loc, const glm::vec4 *xyzw, UInt32 hintSize);
+    static void SetUniform(Int32 loc, const float *x, UInt32 hintSize);
+    static void SetUniform(Int32 loc, const glm::vec2 *xy, UInt32 hintSize);
+    static void SetUniform(Int32 loc, const glm::vec3 *xyz, UInt32 hintSize);
+    static void SetUniform(Int32 loc, const glm::vec4 *xyzw, UInt32 hintSize);
 
-    void SetUniform(Int32 loc, const UInt32 *x, UInt32 hintSize);
-    void SetUniform(Int32 loc, const glm::uvec2 *xy, UInt32 hintSize);
-    void SetUniform(Int32 loc, const glm::uvec3 *xyz, UInt32 hintSize);
-    void SetUniform(Int32 loc, const glm::uvec4 *xyzw, UInt32 hintSize);
+    static void SetUniform(Int32 loc, const UInt32 *x, UInt32 hintSize);
+    static void SetUniform(Int32 loc, const glm::uvec2 *xy, UInt32 hintSize);
+    static void SetUniform(Int32 loc, const glm::uvec3 *xyz, UInt32 hintSize);
+    static void SetUniform(Int32 loc, const glm::uvec4 *xyzw, UInt32 hintSize);
 
-    void SetUniform(Int32 loc, const Int32 *x, UInt32 hintSize);
-    void SetUniform(Int32 loc, const glm::ivec2 *xy, UInt32 hintSize);
-    void SetUniform(Int32 loc, const glm::ivec3 *xyz, UInt32 hintSize);
-    void SetUniform(Int32 loc, const glm::ivec4 *xyzw, UInt32 hintSize);
+    static void SetUniform(Int32 loc, const Int32 *x, UInt32 hintSize);
+    static void SetUniform(Int32 loc, const glm::ivec2 *xy, UInt32 hintSize);
+    static void SetUniform(Int32 loc, const glm::ivec3 *xyz, UInt32 hintSize);
+    static void SetUniform(Int32 loc, const glm::ivec4 *xyzw, UInt32 hintSize);
 
-    void SetUniform(Int32 loc, const glm::mat4 &mat);
-    void SetUniform(Int32 loc, const glm::mat4x3 &mat);
-    void SetUniform(Int32 loc, const glm::mat3 &mat);
+    static void SetUniform(Int32 loc, const glm::mat4 &mat);
+    static void SetUniform(Int32 loc, const glm::mat4x3 &mat);
+    static void SetUniform(Int32 loc, const glm::mat3 &mat);
 
-    void SetUniform(Int32 loc, const float &x);
-    void SetUniform(Int32 loc, const glm::vec2 &xy);
-    void SetUniform(Int32 loc, const glm::vec3 &xyz);
-    void SetUniform(Int32 loc, const glm::vec4 &xyzw);
+    static void SetUniform(Int32 loc, const float &x);
+    static void SetUniform(Int32 loc, const glm::vec2 &xy);
+    static void SetUniform(Int32 loc, const glm::vec3 &xyz);
+    static void SetUniform(Int32 loc, const glm::vec4 &xyzw);
 
-    void SetUniform(Int32 loc, const UInt32 &x);
-    void SetUniform(Int32 loc, const glm::uvec2 &xy);
-    void SetUniform(Int32 loc, const glm::uvec3 &xyz);
-    void SetUniform(Int32 loc, const glm::uvec4 &xyzw);
+    static void SetUniform(Int32 loc, const UInt32 &x);
+    static void SetUniform(Int32 loc, const glm::uvec2 &xy);
+    static void SetUniform(Int32 loc, const glm::uvec3 &xyz);
+    static void SetUniform(Int32 loc, const glm::uvec4 &xyzw);
 
-    void SetUniform(Int32 loc, const Int32 &x);
-    void SetUniform(Int32 loc, const glm::ivec2 &xy);
-    void SetUniform(Int32 loc, const glm::ivec3 &xyz);
-    void SetUniform(Int32 loc, const glm::ivec4 &xyzw);
+    static void SetUniform(Int32 loc, const Int32 &x);
+    static void SetUniform(Int32 loc, const glm::ivec2 &xy);
+    static void SetUniform(Int32 loc, const glm::ivec3 &xyz);
+    static void SetUniform(Int32 loc, const glm::ivec4 &xyzw);
 
 public:
     UInt32 progId;
+    std::unordered_map<std::string, UniformDescription> uniforms;
+    std::unordered_map<std::string, AttributeDescription> attributes;
 };
 
 class RenderBatcher {
