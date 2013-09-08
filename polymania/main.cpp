@@ -143,8 +143,8 @@ void Scene::Update(std::shared_ptr<Controller> k) {
 
 void Scene::Draw() {
     if(pcamx != camx || pcamy != camy) {
-        float icamx = pcamx+(camx-pcamx)*interp;
-        float icamy = pcamy+(camy-pcamy)*interp;
+        float icamx = pcamx+(camx-pcamx)*float(interp);
+        float icamy = pcamy+(camy-pcamy)*float(interp);
         shader["modelview"] = glm::lookAt(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(icamx, icamy, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
         shader["camx"] = icamx;
         shader["camy"] = icamy;

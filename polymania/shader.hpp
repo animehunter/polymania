@@ -76,7 +76,11 @@ public:
     Int32 GetAttributeLocation(const std::string &name) const;
 
     UniformProxy operator[](const std::string &name) const {
-        return UniformProxy (GetUniformLocation(name));
+        return UniformProxy(GetUniformLocation(name));
+    }
+
+    UniformProxy operator[](Int32 inUniformLocation) const {
+        return UniformProxy(inUniformLocation);
     }
 
 public:
