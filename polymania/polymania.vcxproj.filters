@@ -53,6 +53,9 @@
     <ClCompile Include="registry.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="resource.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="shader.hpp">
@@ -80,6 +83,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="object.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

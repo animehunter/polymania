@@ -163,6 +163,7 @@
     <ClCompile Include="other\controller_glfw.cpp" />
     <ClCompile Include="other\timer_glfw.cpp" />
     <ClCompile Include="registry.cpp" />
+    <ClCompile Include="resource.cpp" />
     <ClCompile Include="shader.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -172,6 +173,7 @@
     <ClInclude Include="other\context_glfw.hpp" />
     <ClInclude Include="other\controller_glfw.hpp" />
     <ClInclude Include="other\timer_glfw.hpp" />
+    <ClInclude Include="resource.hpp" />
     <ClInclude Include="shader.hpp" />
     <ClInclude Include="timer.hpp" />
     <ClInclude Include="types.hpp" />
