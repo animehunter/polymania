@@ -401,3 +401,4 @@ void Shader::SetBlendFunc(BlendFunc inBlend) {
             break;
     }
 }
+

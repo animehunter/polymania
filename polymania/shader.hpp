@@ -25,14 +25,13 @@ template<typename T>
 struct UniformArray {
     const T *base;
     UInt32 size;
+
+    UniformArray(const T *base, UInt32 size) : base(base), size(size) {}
 };
 
 template<typename T>
 UniformArray<T> MakeUniformArray(const T *inBase, UInt32 hintSize) {
-    UniformArray<T> u;
-    u.base = inBase;
-    u.size = hintSize;
-    return u;
+    return UniformArray<T>(inBase, hintSize);
 }
 
 class Shader {

@@ -101,6 +101,7 @@ public:
     double interp; //an interpolation value between the previous and the current frame for the purpose of drawing
     RenderBatcher batch;
     Shader shader;
+    float pcamx, pcamy;
     float camx, camy;
 
     Scene();
@@ -132,19 +133,24 @@ Scene::~Scene() {
 
 }
 void Scene::Update(std::shared_ptr<Controller> k) {
-    if(k->left) camx -= 0.1f;
-    if(k->right) camx += 0.1f;
+    pcamx = camx; 
+    pcamy = camy; 
+    if(k->left)  camx -= 0.1f;
+    if(k->right)  camx += 0.1f;
     if(k->up) camy += 0.1f;
     if(k->down) camy -= 0.1f;
-    shader["modelview"] = glm::lookAt(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(camx, camy, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-    shader["camx"] = camx;
-    shader["camy"] = camy;
 }
 
 void Scene::Draw() {
+    if(pcamx != camx || pcamy != camy) {
+        float icamx = pcamx+(camx-pcamx)*interp;
+        float icamy = pcamy+(camy-pcamy)*interp;
+        shader["modelview"] = glm::lookAt(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(icamx, icamy, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        shader["camx"] = icamx;
+        shader["camy"] = icamy;
+    }
     batch.Draw();
 }
-
 
 // TODO add this to message queue
 static void OnResize(GLFWwindow *window, int w, int h) {
@@ -177,7 +183,7 @@ static void EngineMain(std::shared_ptr<Context> mainWindow) {
     glFrontFace(GL_CCW);
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
-    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+    glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
 
 
     AutoVao autoVao; // auto VAO for opengl 3+
