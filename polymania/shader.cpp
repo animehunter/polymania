@@ -29,7 +29,7 @@ const char *vheader = "#define IN attribute\n"
     "precision mediump int\n";
 
 const char *fheader = "#define IN varying\n"
-    "#define fragColor gl_FragColor\n"
+    "#define out_FragColor gl_FragColor\n"
     "precision mediump float\n"
     "precision mediump int\n";
 #else
@@ -45,7 +45,7 @@ const char *fheader = "#version 130\n"
     "#define mediump\n"
     "#define highp\n"
     "#define IN in\n"
-    "out vec4 fragColor;\n";
+    "out vec4 out_FragColor;\n";
 #endif
 
 
@@ -67,8 +67,8 @@ RenderBatcher::~RenderBatcher() {
 void RenderBatcher::SetShader(const Shader &s) {
     shader = &s;
     glBindBuffer(GL_ARRAY_BUFFER, vboId);
-    Int32 posIdx = shader->GetAttributeLocation("pos");
-    Int32 colorIdx = shader->GetAttributeLocation("color");
+    Int32 posIdx = shader->GetAttributeLocation("in_Position");
+    Int32 colorIdx = shader->GetAttributeLocation("in_Color");
     glEnableVertexAttribArray(posIdx); //pos
     glEnableVertexAttribArray(colorIdx); //color
     glVertexAttribPointer(posIdx, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), 0);
@@ -182,7 +182,7 @@ bool Shader::Initialize(const std::string &vertshader, const std::string &fragsh
     glAttachShader(progId, fshaderId);
 
 #ifndef __arm__
-    glBindFragDataLocation(progId, 0, "fragColor");
+    glBindFragDataLocation(progId, 0, "out_FragColor");
 #endif
 
     glLinkProgram(progId);
