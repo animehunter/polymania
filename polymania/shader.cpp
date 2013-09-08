@@ -92,7 +92,7 @@ void RenderBatcher::Queue(float x, float y, float z, UInt8 r, UInt8 g, UInt8 b, 
 void RenderBatcher::Queue(const Vertex *inVertices, UInt32 inNumVertices) {
     UInt32 inVerticesPos = 0;
     while(nVerts+inNumVertices-inVerticesPos >= verts.size()) {
-        UInt32 maxCopy = verts.size() - nVerts;
+        UInt32 maxCopy = UInt32(verts.size()) - nVerts;
         std::memcpy(&verts[nVerts], inVertices+inVerticesPos, sizeof(Vertex)*maxCopy);
         inVerticesPos += maxCopy;
         UpsizeBatch();
@@ -123,7 +123,7 @@ void RenderBatcher::Upload(UsageHint hintUsage) {
 }
 
 void RenderBatcher::Draw() {
-    glDrawArrays(GL_TRIANGLES, 0, verts.size());
+    glDrawArrays(GL_TRIANGLES, 0, Int32(verts.size()));
 }
 void RenderBatcher::UploadDraw(bool clear) {
     
