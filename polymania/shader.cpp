@@ -17,6 +17,8 @@
 #include <fstream>
 
 #include "types.hpp"
+#include "asyncmodel.hpp"
+#include "resource.hpp"
 #include "shader.hpp"
 
 
@@ -402,3 +404,32 @@ void Shader::SetBlendFunc(BlendFunc inBlend) {
     }
 }
 
+bool ResourceShader::Load( ResourceMemoryAllocator &inAllocator, ResourceIo &inIo ) {
+    allocator = &inAllocator;
+    Int size = 0;
+    Int realSize = 0;
+    Int bytesRead;
+
+    const Int increment = 1024;
+    do {
+        size += increment;
+        string = (char*)allocator->Reallocate(string, size+1);
+        
+        inIo.Read(string+size-increment, increment).GetResult(bytesRead);
+        realSize += bytesRead;
+
+        if(bytesRead < increment) break;
+    } while(true);
+
+    string = (char*)allocator->Reallocate(string, realSize+1);
+    string[realSize] = 0;
+
+    return true;
+}
+
+bool ResourceShader::Unload() {
+    if(allocator && string) {
+        allocator->Free(string);
+    }
+    return true;
+}

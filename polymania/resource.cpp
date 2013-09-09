@@ -1,10 +1,14 @@
 #include <cstdlib> 
 #include <cstdio>
+#include <cctype>
 #include <memory>
 #include <unordered_map>
 #include <string>
+#include <algorithm>
+#include <iostream>
 
 #include "types.hpp"
+#include "asyncmodel.hpp"
 #include "resource.hpp"
 
 using std::FILE;
@@ -22,7 +26,7 @@ public:
     }
 };
 
-ResourceMemoryAllocator *GetDefaultAllocatorInstance() {
+static ResourceMemoryAllocator *GetDefaultAllocatorInstance() {
     static ResourceMemoryAllocatorDefault inst;
     return &inst;
 }
@@ -52,11 +56,15 @@ public:
 
     }
 
-    Int Read(void *outBuffer, UInt inSizeBytes) {
-        return fread(outBuffer, 1, inSizeBytes, fp);
+    AsyncResult<Int> Read(void *outBuffer, UInt inSizeBytes) {
+        AsyncResult<Int> result;
+        result.syncResult = fread(outBuffer, 1, inSizeBytes, fp);
+        return result;
     }
-    Int Write(const void *inBuffer, UInt inSizeBytes) {
-        return fwrite(inBuffer, 1, inSizeBytes, fp);
+    AsyncResult<Int> Write(const void *inBuffer, UInt inSizeBytes) {
+        AsyncResult<Int> result;
+        result.syncResult = fwrite(inBuffer, 1, inSizeBytes, fp);
+        return result;
     }
     bool Seek(UInt inOffset, Int32 inOrigin) {
         Int succ;
@@ -76,11 +84,14 @@ public:
 
         return succ ? false : true;
     }
-    virtual UInt Tell() const {
+    virtual Int Tell() const {
         return ftell(fp);
     }
     bool IsWritable() const {
         return writable;
+    }
+    bool IsSeekable() const {
+        return true;
     }
 
 private:
@@ -94,7 +105,7 @@ public:
         return true;
     }
 
-private:
+protected:
     ResourceIo *InternalOpen(const std::string &inLocation, Int32 inPermission) {
         char *mode;
         bool readonly;
@@ -136,17 +147,21 @@ private:
     }
 };
 
-std::shared_ptr<ResourceIo> ResourceDirectory::Open(const std::string &inLocation, Int32 inPermission)  {
-    return std::shared_ptr<ResourceIo>(InternalOpen(inLocation, inPermission), 
-                                       CloseResourceOnDestroy(this, &ResourceDirectory::InternalClose));
+AsyncResult<std::shared_ptr<ResourceIo>> ResourceDirectory::Open(const std::string &inLocation, Int32 inPermission)  {
+    AsyncResult<std::shared_ptr<ResourceIo>> result;
+    ResourceIo *rio = InternalOpen(inLocation, inPermission);
+    result.syncResult = rio ? std::shared_ptr<ResourceIo>(InternalOpen(inLocation, inPermission), 
+                                                 CloseResourceOnDestroy(this, &ResourceDirectory::InternalClose)) : 
+                           std::shared_ptr<ResourceIo>();
+    return result;
 }
 
-ResourceDirectory *GetDefaultResourceLocatorInstance() {
+static ResourceDirectory *GetDefaultResourceDirectoryInstance() {
     static ResourceDirectoryDisk inst;
     return &inst;
 }
 
-ResourceDirectory *ResourceDirectory::instance = GetDefaultResourceLocatorInstance();
+ResourceDirectory *ResourceDirectory::instance = GetDefaultResourceDirectoryInstance();
 
 //////////////////////////////////////////////////////////////////////////
 
@@ -173,29 +188,50 @@ void ResourceCache::DecRef( Resource *res ) {
 
 ResourceHandle ResourceCache::Load(const std::string &inLocation, bool hintForceReload) {
     // first check linkedResources
-    auto itLinked = linkedResources.find(inLocation);
-    if(itLinked != linkedResources.end()) {
-        itLinked->second->refCount++;
-        return ResourceHandle(itLinked->second, DecRefOnDestroy(this));
-    }
+    if(!hintForceReload) {
+        auto itLinked = linkedResources.find(inLocation);
+        if(itLinked != linkedResources.end()) {
+            itLinked->second->refCount++;
+            return ResourceHandle(itLinked->second, DecRefOnDestroy(this));
+        }
 
-    // if not found, check unlinkedResources and then link it
-    auto itUnlinked = unlinkedResources.find(inLocation);
-    if(itUnlinked != unlinkedResources.end()) {
-        Resource *resource = itUnlinked->second;
-        itUnlinked->second->refCount++;
-        linkedResources[itUnlinked->first] = itUnlinked->second;
-        unlinkedResources.erase(itUnlinked);
-        return ResourceHandle(resource, DecRefOnDestroy(this));
+        // if not found, check unlinkedResources and then link it
+        auto itUnlinked = unlinkedResources.find(inLocation);
+        if(itUnlinked != unlinkedResources.end()) {
+            Resource *resource = itUnlinked->second;
+            itUnlinked->second->refCount++;
+            linkedResources[itUnlinked->first] = itUnlinked->second;
+            unlinkedResources.erase(itUnlinked);
+            return ResourceHandle(resource, DecRefOnDestroy(this));
+        }
+    } else {
+        auto itUnlinked = unlinkedResources.find(inLocation);
+        if(itUnlinked != unlinkedResources.end()) {
+            unlinkedResources.erase(itUnlinked);
+        }
     }
 
     // finally if not found, call Load() and then link it
-    Resource *newRes = (Resource*)ResourceMemoryAllocator::instance->Allocate(typeSize);
-    constructor(newRes);
-    newRes->refCount++;
-    newRes->location = inLocation;
-    linkedResources[inLocation] = newRes;
-    return ResourceHandle(newRes, DecRefOnDestroy(this));
+    auto res = ResourceDirectory::instance->Open(inLocation, ResourceDirectory::PERMISSION_ReadOnly);
+    std::shared_ptr<ResourceIo> resIo;
+    res.GetResult(resIo);
+    if(resIo) {
+
+        Resource *newRes = (Resource*)ResourceMemoryAllocator::instance->Allocate(typeSize);
+        constructor(newRes);
+        if(newRes->Load(*ResourceMemoryAllocator::instance, *resIo.get())) {
+            newRes->refCount++;
+            newRes->location = inLocation;
+            linkedResources[inLocation] = newRes;
+            return ResourceHandle(newRes, DecRefOnDestroy(this));
+        } else {
+            newRes->~Resource();
+            ResourceMemoryAllocator::instance->Free(newRes);
+            return ResourceHandle();
+        }
+    } else {
+        return ResourceHandle();
+    }
 }
 
 void ResourceCache::Purge() {
@@ -209,7 +245,18 @@ void ResourceCache::Purge() {
     unlinkedResources.clear();
 }
 
-
 void ResourceManager::AddResourceLoader(const std::string &in3CharExtName, UInt32 inTypeSize, void(*inConstructor)(Resource*)) {
     caches[in3CharExtName] = std::make_shared<ResourceCache>(inTypeSize, inConstructor);
+}
+
+std::shared_ptr<Resource> ResourceManager::Load(const std::string &location) {
+    std::string ext = location.substr(location.find_last_of(".") + 1);
+    std::transform(ext.begin(), ext.end(), ext.begin(), std::tolower);
+    auto it = caches.find(ext);
+    if(it == caches.end()) {
+        std::cerr << "Could not found ResourceLoader for: " << ext << std::endl;
+        return std::shared_ptr<Resource>();
+    } else {
+        return std::shared_ptr<Resource>(it->second->Load(location));
+    }
 }

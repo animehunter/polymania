@@ -160,3 +160,16 @@ private:
     std::vector<Vertex> verts;
     UInt32 nVerts;
 };
+
+class ResourceShader : public Resource {
+public:
+    ResourceShader() : allocator(0), string(0) {}
+    bool Load(ResourceMemoryAllocator &inAllocator, ResourceIo &inIo);
+    bool Unload();
+
+public:
+    char *string;
+
+private:
+    ResourceMemoryAllocator *allocator;
+};

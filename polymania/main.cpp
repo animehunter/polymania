@@ -36,6 +36,8 @@
 #include "context.hpp"
 #include "controller.hpp"
 #include "timer.hpp"
+#include "asyncmodel.hpp"
+#include "resource.hpp"
 #include "shader.hpp"
 #include "object.hpp"
 
@@ -99,6 +101,7 @@ int GWindowHeight = HEIGHT;
 class Scene {
 public:
     double interp; //an interpolation value between the previous and the current frame for the purpose of drawing
+    ResourceManager resMan;
     RenderBatcher batch;
     Shader shader;
     float pcamx, pcamy;
@@ -111,10 +114,13 @@ public:
 };
 
 Scene::Scene() : camx(0), camy(0) {
+    resMan.AddResourceLoader<ResourceShader>("glf");
+    resMan.AddResourceLoader<ResourceShader>("glv");
+
     Shader::SetBlendFunc(Shader::BLEND_Transparent);
 
-    std::string vertshader = FileRead("shaders/default.vert.glsl");
-    std::string fragshader = FileRead("shaders/default.frag.glsl");
+    std::string vertshader = resMan.Load<ResourceShader>("shaders/default.glv")->string;
+    std::string fragshader = resMan.Load<ResourceShader>("shaders/default.glf")->string;
     shader.Initialize(vertshader, fragshader, true);
     shader["projection"] = glm::perspective(60.0f, float(GWindowWidth)/float(GWindowHeight), 0.1f, 100.0f);
     shader["modelview"] = glm::lookAt(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(camx, camy, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));

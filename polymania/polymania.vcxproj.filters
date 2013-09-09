@@ -88,5 +88,8 @@
     <ClInclude Include="resource.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="asyncmodel.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

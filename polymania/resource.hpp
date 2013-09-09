@@ -1,6 +1,5 @@
 #pragma once
 
-
 class ResourceMemoryAllocator {
 public:
     static ResourceMemoryAllocator *instance;
@@ -32,11 +31,25 @@ public:
     ResourceIo() {}
     virtual ~ResourceIo() {}
 
-    virtual Int Read(void *outBuffer, UInt inSizeBytes)=0;
-    virtual Int Write(const void *inBuffer, UInt inSizeBytes)=0;
+    virtual AsyncResult<Int> Read(void *outBuffer, UInt inSizeBytes)=0;
+    virtual AsyncResult<Int> Write(const void *inBuffer, UInt inSizeBytes)=0;
     virtual bool Seek(UInt inOffset, Int32 inOrigin)=0;
-    virtual UInt Tell() const=0;
+
+    // return -1 if not seekable
+    virtual Int Tell() const=0;
     virtual bool IsWritable() const=0;
+    virtual bool IsSeekable() const=0;
+
+    template<typename T>
+    inline T Read() {
+        T val = T();
+        Read(&val, sizeof(T));
+        return val;
+    }
+    template<typename T>
+    inline void Write(T val) {
+        Write(&val, sizeof(T));
+    }
 };
 
 class ResourceDirectory {
@@ -53,18 +66,7 @@ public:
     ResourceDirectory() {}
     virtual ~ResourceDirectory() {}
 
-    template<typename T>
-    inline T Read() {
-        T val = T();
-        Read(&val, sizeof(T));
-        return val;
-    }
-    template<typename T>
-    inline void Write(T val) {
-        Write(&val, sizeof(T));
-    }
-
-    std::shared_ptr<ResourceIo> Open(const std::string &inLocation, Int32 inPermission);
+    AsyncResult<std::shared_ptr<ResourceIo>> Open(const std::string &inLocation, Int32 inPermission);
     virtual bool IsWritable() const=0;
 
 protected:
@@ -107,8 +109,8 @@ class ResourceManager {
 private:
     template<typename T>
     struct CtorToFunc {
-        static void Ctor(T *val) {
-            (void*)new(val)();
+        static void Ctor(Resource *val) {
+            (void*)new(val)T();
         }
     };
 
@@ -117,8 +119,13 @@ public:
     void AddResourceLoader(const std::string &in3CharExtName) {
         AddResourceLoader(in3CharExtName, sizeof(T), &CtorToFunc<T>::Ctor);
     }
-
     void AddResourceLoader(const std::string &in3CharExtName, UInt32 inTypeSize, void(*inConstructor)(Resource*));
+
+    template<typename T>
+    std::shared_ptr<T> Load(const std::string &location) {
+        return std::static_pointer_cast<T>(Load(location));
+    }
+    std::shared_ptr<Resource> Load(const std::string &location);
 
     // resource type (3 char extension name) -> cache
     std::unordered_map<std::string, std::shared_ptr<ResourceCache>> caches;

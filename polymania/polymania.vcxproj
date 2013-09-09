@@ -167,6 +167,7 @@
     <ClCompile Include="shader.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="asyncmodel.hpp" />
     <ClInclude Include="context.hpp" />
     <ClInclude Include="controller.hpp" />
     <ClInclude Include="object.hpp" />
