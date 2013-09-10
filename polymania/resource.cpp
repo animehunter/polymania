@@ -186,51 +186,58 @@ void ResourceCache::DecRef( Resource *res ) {
     }
 }
 
-ResourceHandle ResourceCache::Load(const std::string &inLocation, bool hintForceReload) {
+ResourceHandle ResourceCache::Load(const std::string &inLocation) {
     // first check linkedResources
-    if(!hintForceReload) {
-        auto itLinked = linkedResources.find(inLocation);
-        if(itLinked != linkedResources.end()) {
-            itLinked->second->refCount++;
-            return ResourceHandle(itLinked->second, DecRefOnDestroy(this));
-        }
+    auto itLinked = linkedResources.find(inLocation);
+    if(itLinked != linkedResources.end()) {
+        itLinked->second->refCount++;
+        return ResourceHandle(itLinked->second, DecRefOnDestroy(this));
+    }
 
-        // if not found, check unlinkedResources and then link it
-        auto itUnlinked = unlinkedResources.find(inLocation);
-        if(itUnlinked != unlinkedResources.end()) {
-            Resource *resource = itUnlinked->second;
-            itUnlinked->second->refCount++;
-            linkedResources[itUnlinked->first] = itUnlinked->second;
-            unlinkedResources.erase(itUnlinked);
-            return ResourceHandle(resource, DecRefOnDestroy(this));
-        }
-    } else {
-        auto itUnlinked = unlinkedResources.find(inLocation);
-        if(itUnlinked != unlinkedResources.end()) {
-            unlinkedResources.erase(itUnlinked);
-        }
+    // if not found, check unlinkedResources and then link it
+    auto itUnlinked = unlinkedResources.find(inLocation);
+    if(itUnlinked != unlinkedResources.end()) {
+        Resource *resource = itUnlinked->second;
+        itUnlinked->second->refCount++;
+        linkedResources[itUnlinked->first] = itUnlinked->second;
+        unlinkedResources.erase(itUnlinked);
+        return ResourceHandle(resource, DecRefOnDestroy(this));
     }
 
     // finally if not found, call Load() and then link it
-    auto res = ResourceDirectory::instance->Open(inLocation, ResourceDirectory::PERMISSION_ReadOnly);
-    std::shared_ptr<ResourceIo> resIo;
-    res.GetResult(resIo);
-    if(resIo) {
+    Resource *r = LoadRaw(inLocation);
+    return r ? ResourceHandle(r, DecRefOnDestroy(this)) : ResourceHandle();
+}
 
+bool ResourceCache::Reload(const ResourceHandle &inHandle) {
+    inHandle->Unload();
+
+    auto res = ResourceDirectory::instance->Open(inHandle->location, ResourceDirectory::PERMISSION_ReadOnly);
+    auto resIo = res.GetResult();
+
+    if(!resIo) return false;
+
+    return inHandle->Load(*ResourceMemoryAllocator::instance, *resIo.get());
+}
+
+Resource *ResourceCache::LoadRaw( const std::string & inLocation ) {
+    auto res = ResourceDirectory::instance->Open(inLocation, ResourceDirectory::PERMISSION_ReadOnly);
+    auto resIo=res.GetResult();
+    if(resIo) {
         Resource *newRes = (Resource*)ResourceMemoryAllocator::instance->Allocate(typeSize);
         constructor(newRes);
         if(newRes->Load(*ResourceMemoryAllocator::instance, *resIo.get())) {
             newRes->refCount++;
             newRes->location = inLocation;
             linkedResources[inLocation] = newRes;
-            return ResourceHandle(newRes, DecRefOnDestroy(this));
+            return newRes;
         } else {
             newRes->~Resource();
             ResourceMemoryAllocator::instance->Free(newRes);
-            return ResourceHandle();
+            return 0;
         }
     } else {
-        return ResourceHandle();
+        return 0;
     }
 }
 
@@ -249,14 +256,14 @@ void ResourceManager::AddResourceLoader(const std::string &in3CharExtName, UInt3
     caches[in3CharExtName] = std::make_shared<ResourceCache>(inTypeSize, inConstructor);
 }
 
-std::shared_ptr<Resource> ResourceManager::Load(const std::string &location) {
+ResourceHandle ResourceManager::Load(const std::string &location) {
     std::string ext = location.substr(location.find_last_of(".") + 1);
     std::transform(ext.begin(), ext.end(), ext.begin(), std::tolower);
     auto it = caches.find(ext);
     if(it == caches.end()) {
         std::cerr << "Could not found ResourceLoader for: " << ext << std::endl;
-        return std::shared_ptr<Resource>();
+        return ResourceHandle();
     } else {
-        return std::shared_ptr<Resource>(it->second->Load(location));
+        return ResourceHandle(it->second->Load(location));
     }
 }

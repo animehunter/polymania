@@ -415,7 +415,7 @@ bool ResourceShader::Load( ResourceMemoryAllocator &inAllocator, ResourceIo &inI
         size += increment;
         string = (char*)allocator->Reallocate(string, size+1);
         
-        inIo.Read(string+size-increment, increment).GetResult(bytesRead);
+        bytesRead = inIo.Read(string+size-increment, increment).GetResult();
         realSize += bytesRead;
 
         if(bytesRead < increment) break;
@@ -430,6 +430,9 @@ bool ResourceShader::Load( ResourceMemoryAllocator &inAllocator, ResourceIo &inI
 bool ResourceShader::Unload() {
     if(allocator && string) {
         allocator->Free(string);
+        string = 0;
+        return true;
+    } else {
+        return false;
     }
-    return true;
 }

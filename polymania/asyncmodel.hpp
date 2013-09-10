@@ -22,7 +22,7 @@ private:
         AsyncCompletionHolderBase *completionRoutine;
         AsyncCompletionHolderBase *onComplete;
 
-        AsyncState(AsyncCompletionHolderBase *completionRoutine) : isComplete(false), completionRoutine(completionRoutine), onComplete(0) {}
+        AsyncState(AsyncCompletionHolderBase *completionRoutine, AsyncCompletionHolderBase *onComplete) : isComplete(false), completionRoutine(completionRoutine), onComplete(onComplete) {}
     };
 
 public:
@@ -31,9 +31,18 @@ public:
     }
 
     // construct an asynchronous result
-    template<typename F>
-    AsyncResult(F completionFunc) {
-        asyncState = std::shared_ptr<AsyncState>(new AsyncState(new AsyncCompletionHolder<F>(completionFunc)));
+    template<typename FCompletion>
+    AsyncResult(FCompletion completionFunc) {
+        auto completion = new AsyncCompletionHolder<FCompletion>(completionFunc);
+        asyncState = std::shared_ptr<AsyncState>(new AsyncState(completion, 0));
+    }
+
+    // construct an asynchronous result
+    template<typename FCompletion, typename FOnComplete>
+    AsyncResult(FCompletion completionFunc, FOnComplete onComplete) {
+        auto completion = new AsyncCompletionHolder<FCompletion>(completionFunc);
+        auto onComplete = new AsyncCompletionHolderBase<FOnComplete>(onComplete);
+        asyncState = std::shared_ptr<AsyncState>(new AsyncState(completion, onComplete));
     }
 
     ~AsyncResult() {
@@ -43,31 +52,18 @@ public:
         }
     }
 
-    template<typename F>
-    inline AsyncResult<T> &SetCompletionCallback(F inOnComplete) {
-        if(asyncState) {
-            if(asyncState->onComplete) delete asyncState->onComplete;
-            asyncState->onComplete = new AsyncCompletionHolder<F>(onComplete);
-        }
-        return *this;
-    }
-
-    inline void ClearCompletionCallback() {
-        if(asyncState) {
-            if(asyncState->onComplete) delete asyncState->onComplete;
-            asyncState->onComplete  0;
-        }
-    }
-
+    // poll completion status (nonblocking)
     inline bool IsComplete() const { 
         return asyncState ? asyncState->isComplete : true;
     }
-    inline void GetResult(T &outResult) const { 
+
+    // Get the result, will block until the IO require is complete
+    inline T GetResult() const { 
         if(asyncState) {
             asyncState->completionRoutine->Call();
-            outResult = asyncState->result;
+            return asyncState->result;
         } else {
-            outResult = syncResult;
+            return syncResult;
         }
     }
 

@@ -89,13 +89,22 @@ public:
 
 typedef std::shared_ptr<Resource> ResourceHandle;
 
+template<typename T>
+struct ResourceHandleTyped {
+    typedef std::shared_ptr<T> type;
+};
+
 class ResourceCache {
 public:
     ResourceCache(UInt32 inTypeSize, void(*inConstructor)(Resource*)) : typeSize(inTypeSize), constructor(inConstructor) {}
 
-    ResourceHandle Load(const std::string &inLocation, bool hintForceReload=false);
+    ResourceHandle Load(const std::string &inLocation);
+    bool Reload(const ResourceHandle &inHandle);
     void Purge(); // Unload all unlinked resources
     void DecRef(Resource *inResource);
+
+private:
+    Resource *LoadRaw( const std::string & inLocation );
 
 private:
     // maps resource location -> resource
@@ -122,10 +131,10 @@ public:
     void AddResourceLoader(const std::string &in3CharExtName, UInt32 inTypeSize, void(*inConstructor)(Resource*));
 
     template<typename T>
-    std::shared_ptr<T> Load(const std::string &location) {
+    typename ResourceHandleTyped<T>::type Load(const std::string &location) {
         return std::static_pointer_cast<T>(Load(location));
     }
-    std::shared_ptr<Resource> Load(const std::string &location);
+    ResourceHandle Load(const std::string &location);
 
     // resource type (3 char extension name) -> cache
     std::unordered_map<std::string, std::shared_ptr<ResourceCache>> caches;
