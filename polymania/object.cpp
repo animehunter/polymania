@@ -37,6 +37,22 @@ bool MetaField::ValidateType( ETypes to ) const{
     }
 }
 
+Event::Data Event::MakeEventData() {
+    return Event::Data();
+}
+
+Event::DataAssign Event::MakeEventData( const std::string &name, MetaField field ) {
+    return Event::DataAssign(name, field);
+}
+
+const MetaField &Event::Get( const std::string& inName ) const {
+    auto it = data.find(inName);
+    if(it == data.end()) { 
+        std::cerr << "COULD NOT find field:" << inName << " event:" << type << std::endl;
+        return MetaField::nullField;
+    } else return it->second;
+}
+
 bool Object::StaticInit() {
     MetaField::StaticInitMetaTypeNames();
     StaticRegisterClasses();
@@ -102,4 +118,3 @@ Event::Handler Object::FindEventHandler( const std::string& name ) {
     // Otherwise fire off the event
     else return it->second;
 }
-

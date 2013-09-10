@@ -21,9 +21,7 @@
 #define GL_EXTENSION_EXISTS(ext) GLExtensionExists(ext, #ext)
 
 static void OnResize(GLFWwindow *window, Int32 w, Int32 h) {
-    Event::Data data;
-    data["inWidth"] = w;
-    data["inHeight"] = h;
+    auto data = Event::MakeEventData("inWidth", w)("inHeight",h);
     ((Object*)GGameSys)->Send(Event("ResizedWindow", data));
     glViewport (0, 0, (GLsizei) w, (GLsizei) h);
 }

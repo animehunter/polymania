@@ -56,6 +56,21 @@ struct Event {
     typedef bool (*Handler)(Object*, const Event &ev);
     typedef std::unordered_map<std::string, MetaField> Data;
 
+private:
+    struct DataAssign{ 
+        DataAssign(const std::string &name, MetaField field) { d[name] = field; }
+        DataAssign &operator()(const std::string &name, MetaField field) {
+            d[name] = field;
+            return *this;
+        }
+        operator const Data&() const { return d; }
+        private: Data d;
+    };
+
+public:
+    static Data MakeEventData();
+    static DataAssign MakeEventData(const std::string &name, MetaField field);
+
     // Events must have a type and priority
     Event(const std::string& inType, const Data& inData, Int32 inPriority = 0)
         : type(inType), priority(inPriority), data(inData) {};
@@ -63,11 +78,7 @@ struct Event {
     Event(const std::string& inType, Int32 inPriority = 0)
         : type(inType), priority(inPriority), data(nullData) {};
 
-    const MetaField &Get(const std::string& inName) const {
-        auto it = data.find(inName);
-        if(it == data.end()) return MetaField::nullField;
-        else return it->second;
-    }
+    const MetaField &Get(const std::string& inName) const;
 
     const MetaField &operator[](const std::string& inName) const {
         return Get(inName);

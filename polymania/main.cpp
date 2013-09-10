@@ -131,9 +131,7 @@ static void EngineMain(std::shared_ptr<Context> mainWindow) {
     double timeFrame = 0.0;
     double timeNextTick = 0.0;
 
-    Event::Data params;
-    params["inWidth"] = WIDTH;
-    params["inHeight"] = HEIGHT;
+    auto params = Event::MakeEventData("inWidth", WIDTH)("inHeight", HEIGHT);
     GGameSys = (GameSystem*)Object::StaticConstructObject(Object::StaticFindClass("GameSystem"), params);
 
     while(!GGameSys->quitRequested) {
