@@ -28,8 +28,6 @@ struct MetaField {
     };
     std::string string;
 
-    static void StaticInitMetaTypeNames();
-
     MetaField() : type(TYPE_Null) {}
 
 #define METAFIELD_MAKE_CONVERTOR(t, e, v, vin, vout) MetaField(t val) : type(e), v(vin) {} \
@@ -43,8 +41,12 @@ struct MetaField {
 #undef METAFIELD_MAKE_CONVERTOR
 
 private:
-    static std::string typeNames[TYPE_Max];
+    static void StaticInitMetaTypeNames();
     bool ValidateType(ETypes t) const;
+
+private:
+    static std::string typeNames[TYPE_Max];
+    friend class Object;
 };
 
 struct Event {    
