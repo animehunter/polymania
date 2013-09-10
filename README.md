@@ -5,7 +5,7 @@
 
 ### Depedencies:
 
-- GLEW >= 1.10
+- GLEW >= 1.10.0
 - GLM >= 0.9.4.5
 
 
