@@ -58,10 +58,10 @@ struct Event {
 
     // Events must have a type and priority
     Event(const std::string& inType, const Data& inData, Int32 inPriority = 0)
-        : type(inType), data(inData), priority(inPriority) {};
+        : type(inType), priority(inPriority), data(inData) {};
 
     Event(const std::string& inType, Int32 inPriority = 0)
-        : type(inType), data(nullData), priority(inPriority) {};
+        : type(inType), priority(inPriority), data(nullData) {};
 
     const MetaField &Get(const std::string& inName) const {
         auto it = data.find(inName);

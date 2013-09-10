@@ -10,7 +10,7 @@
 // Globals
 std::unordered_map<std::string, Class> Object::globalClasses;
 
-Event::Data Event::nullData;
+Event::Data Event::nullData = Event::Data();
 
 std::string MetaField::typeNames[TYPE_Max];
 const MetaField MetaField::nullField = MetaField();
