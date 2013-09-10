@@ -6,7 +6,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "polymania", "polymania\poly
 		{DB4846D1-FD79-4D3A-9B8B-25D83D36C790} = {DB4846D1-FD79-4D3A-9B8B-25D83D36C790}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "glfw3", "glfw\glfw.vcxproj", "{DB4846D1-FD79-4D3A-9B8B-25D83D36C790}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "glfw3", "external\source\glfw\glfw.vcxproj", "{DB4846D1-FD79-4D3A-9B8B-25D83D36C790}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

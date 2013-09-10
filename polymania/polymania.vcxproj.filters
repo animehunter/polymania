@@ -27,6 +27,9 @@
       <UniqueIdentifier>{aee257d0-4117-48b4-98d8-4124c16cde58}</UniqueIdentifier>
       <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
+    <Filter Include="external\source">
+      <UniqueIdentifier>{e5b3bee7-1910-4eb4-98a5-73f5b480c457}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -34,9 +37,6 @@
     </ClCompile>
     <ClCompile Include="shader.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\external\glew.c">
-      <Filter>external</Filter>
     </ClCompile>
     <ClCompile Include="other\context_glfw.cpp">
       <Filter>other\source</Filter>
@@ -55,6 +55,9 @@
     </ClCompile>
     <ClCompile Include="resource.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\external\source\glew.c">
+      <Filter>external\source</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

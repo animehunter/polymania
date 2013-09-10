@@ -156,7 +156,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\external\glew.c" />
+    <ClCompile Include="..\external\source\glew.c" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="object.cpp" />
     <ClCompile Include="other\context_glfw.cpp" />
