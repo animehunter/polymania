@@ -3,8 +3,8 @@
 // Forwards
 class Object;
 class Class;
-class Game;
 class Controller;
+class GameSystem;
 
 struct MetaField {
     enum ETypes {
@@ -51,7 +51,7 @@ private:
 
 struct Event {    
     // Handler function
-    typedef bool (Object::*Handler)(Event &ev);
+    typedef bool (Object::*Handler)(const Event &ev);
     typedef std::unordered_map<std::string, MetaField> Data;
 
     // Events must have a type and priority
@@ -107,11 +107,11 @@ public:
     virtual ~Object(){};    
     Class* GetClass() {return _class;}
     Event::Handler FindEventHandler(const std::string& name);
-    void Send(Event &ev);
+    void Send(const Event &ev);
 
 protected:
-    virtual void Update(Game &game, const std::shared_ptr<Controller> &k)=0;
-    virtual void Draw(Game &game)=0;
+    virtual void Update(GameSystem &game, const std::shared_ptr<Controller> &k)=0;
+    virtual void Draw(GameSystem &game)=0;
 };
 
 template<class TKlass>

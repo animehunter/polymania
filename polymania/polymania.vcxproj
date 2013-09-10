@@ -172,6 +172,7 @@
     <ClInclude Include="context.hpp" />
     <ClInclude Include="controller.hpp" />
     <ClInclude Include="game.hpp" />
+    <ClInclude Include="globals.hpp" />
     <ClInclude Include="object.hpp" />
     <ClInclude Include="other\context_glfw.hpp" />
     <ClInclude Include="other\controller_glfw.hpp" />

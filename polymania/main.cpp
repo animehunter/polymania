@@ -42,6 +42,7 @@
 #include "shader.hpp"
 #include "object.hpp"
 #include "game.hpp"
+#include "globals.hpp"
 
 #ifdef __arm__
 #include "rpi/context_rpi.hpp"
@@ -54,12 +55,15 @@
 #endif
 
 //////////////////////////////////////////////////////////////////////////
-// Globals
+// Global Constants
 const int WIDTH = 800;
 const int HEIGHT = 600;
-const bool DEFAULT_VSYNC_ON = true;
+const bool DEFAULT_VSYNC_ON = false;
 const UInt32 TICK_PER_SEC = 20;
 const double SEC_PER_TICK = 1.0/TICK_PER_SEC;
+
+// Real Globals
+GameSystem *GGameSys=0;
 
 ///////////////////////////////////////////////////////////
 // Utils
@@ -90,15 +94,6 @@ inline bool FloatInside(float a, float low, float high, const float epsilon = st
 }
 
 ///////////////////////////////////////////////////////////
-
-
-
-// TODO add this to message queue
-/*static void OnResize(GLFWwindow *window, int w, int h) {
-    GWindowWidth = w;
-    GWindowHeight = h;
-    glViewport (0, 0, (GLsizei) w, (GLsizei) h);
-}*/
 
 static void InitGL() {
     // setup GL
@@ -135,10 +130,13 @@ static void EngineMain(std::shared_ptr<Context> mainWindow) {
     double fpsElapsed = 0.0;
     double timeFrame = 0.0;
     double timeNextTick = 0.0;
-    bool  running = true;
-    Game game(WIDTH, HEIGHT);
 
-    while(running) {
+    Event::Data params;
+    params["inWidth"] = WIDTH;
+    params["inHeight"] = HEIGHT;
+    GGameSys = (GameSystem*)Object::StaticConstructObject(Object::StaticFindClass("GameSystem"), params);
+
+    while(!GGameSys->quitRequested) {
         double timeStart = timer->Seconds();
         
         mainWindow->Poll();
@@ -147,17 +145,17 @@ static void EngineMain(std::shared_ptr<Context> mainWindow) {
         
         int frameSkips = 10; // allow up to 8 frame skips
         while(timer->Seconds() > timeNextTick && frameSkips > 0) {
-            game.Update(ctlr);
+            GGameSys->Update(ctlr);
             frameSkips--;
             timeNextTick += SEC_PER_TICK;
         }
         if(frameSkips < 10)
             ctlr->Reset();
         
-        game.SetInterpolation((timer->Seconds() + SEC_PER_TICK - timeNextTick)/SEC_PER_TICK);
+        GGameSys->interp = (timer->Seconds() + SEC_PER_TICK - timeNextTick)/SEC_PER_TICK;
         
         glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
-        game.Draw();
+        GGameSys->Draw();
         mainWindow->SwapBuffers();
         
         timeFrame += (timer->Seconds() - timeStart);
@@ -171,10 +169,10 @@ static void EngineMain(std::shared_ptr<Context> mainWindow) {
             fpsElapsed = 0.0;
             fpsFrames = 0;
         }
-        
-        // TODO implement quit message
-        //running = !glfwGetKey(mainWindow, GLFW_KEY_ESCAPE) && !glfwWindowShouldClose(mainWindow);
     }
+
+    Object::StaticDestroyObject(GGameSys);
+    GGameSys = 0;
 }
 
 int main() {
@@ -197,10 +195,6 @@ int main() {
 
     std::cout << "Renderer: " << (const char*)glGetString(GL_RENDERER) << std::endl;
     std::cout << "Version: " << (const char*)glGetString(GL_VERSION) << std::endl;
-    
-    // TODO implement resize message
-    //OnResize(mainWindow, WIDTH, HEIGHT);
-    //glfwSetWindowSizeCallback(mainWindow, &OnResize);
 
     EngineMain(ctx);
     ctx->Terminate();

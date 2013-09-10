@@ -20,8 +20,8 @@ public:
     }
 
     Test(const Event::Data &ev){}
-    void Update(Game &scene, const std::shared_ptr<Controller> &k){}
-    void Draw(Game &scene){}
+    void Update(GameSystem &game, const std::shared_ptr<Controller> &k){}
+    void Draw(GameSystem &game){}
 };
 
 CLASS_BEGIN_REGISTRATION

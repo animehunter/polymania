@@ -1,3 +1,6 @@
+#include <unordered_map>
+#include <string>
+#include <memory>
 #include <iostream>
 
 #include <GL/glew.h>
@@ -11,7 +14,19 @@
 #include "../context.hpp"
 #include "context_glfw.hpp"
 
+#include "../types.hpp"
+#include "../object.hpp"
+#include "../globals.hpp"
+
 #define GL_EXTENSION_EXISTS(ext) GLExtensionExists(ext, #ext)
+
+static void OnResize(GLFWwindow *window, Int32 w, Int32 h) {
+    Event::Data data;
+    data["inWidth"] = w;
+    data["inHeight"] = h;
+    ((Object*)GGameSys)->Send(Event("ResizedWindow", data));
+    glViewport (0, 0, (GLsizei) w, (GLsizei) h);
+}
 
 inline GLFWwindow *CreateContext(const char *hintTitle,  int hintWidth, int hintHeight, bool hintFullscreen) {
     GLFWwindow *window=0;
@@ -37,6 +52,8 @@ inline GLFWwindow *CreateContext(const char *hintTitle,  int hintWidth, int hint
         glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, 1);
         window = glfwCreateWindow(hintWidth, hintHeight, hintTitle, 0, 0);
     }
+
+    glfwSetWindowSizeCallback(window, &OnResize);
 
     return window;
 }
@@ -98,6 +115,11 @@ int GlfwContext::SwapBuffers() {
 
 int GlfwContext::Poll() {
     glfwPollEvents();
+    if(glfwGetKey(context, GLFW_KEY_ESCAPE) || glfwWindowShouldClose(context)) {
+        Event::Data ev;
+        ((Object*)GGameSys)->Send(Event("CloseWindow", ev));
+    }
+
     return 0;
 }
 

@@ -81,7 +81,7 @@ void Object::StaticDestroyObject(Object* obj) {
 
 void Object::StaticConstructor() {}
 
-void Object::Send( Event &ev ) {
+void Object::Send( const Event &ev ) {
     auto handler = FindEventHandler(ev.type);
     // If the event couldn't be found
     if(handler) {

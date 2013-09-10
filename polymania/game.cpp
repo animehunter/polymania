@@ -21,7 +21,6 @@
 class GameSystemImplementation {
 public:
     Int32 width, height;
-    double interp; //an interpolation value between the previous and the current frame for the purpose of drawing
     ResourceManager resMan;
     RenderBatcher batch;
     Shader shader;
@@ -31,55 +30,45 @@ public:
     GameSystemImplementation(Int32 inWidth, Int32 inHeight);
     ~GameSystemImplementation();
 
-    void Update(Game &inScene, const std::shared_ptr<Controller> &inController);
-    void Draw(Game &inScene);
+    void Update(GameSystem &game, const std::shared_ptr<Controller> &inController);
+    void Draw(GameSystem &game);
 
 };
 
 //////////////////////////////////////////////////////////////////////////
 // Messages
 bool GameSystem::OnCloseWindow(Event &ev) {
+    quitRequested = true;
     return true;
 }
 
-bool GameSystem::OnResizeWindow(Event &ev) {
+bool GameSystem::OnResizedWindow(Event &ev) {
+    auto &data = ev.data;
+    impl->width = data["inWidth"];
+    impl->height = data["inHeight"];
     return true;
 }
 //////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////
-GameSystem::GameSystem(Event::Data &ev) : impl(new GameSystemImplementation(ev["inWidth"], ev["inHeight"])) {
+GameSystem::GameSystem(Event::Data &ev) : interp(0.0), quitRequested(false),
+                                          impl(new GameSystemImplementation(ev["inWidth"], ev["inHeight"])) {
 
 }
 
-void GameSystem::Update( Game &scene, const std::shared_ptr<Controller> &k ) {
-
+void GameSystem::Update( GameSystem &game, const std::shared_ptr<Controller> &k ) {
+    impl->Update(*this, k);
 }
 
-void GameSystem::Draw( Game &scene ) {
-
+void GameSystem::Draw(GameSystem &game) {
+    impl->Draw(*this);
 }
 
-//////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////
-
-Game::Game(Int32 inWidth, Int32 inHeight) {
-    Event::Data params;
-    params["inWidth"] = inWidth;
-    params["inHeight"] = inHeight;
-    Object *gameSys = Object::StaticConstructObject(Object::StaticFindClass("GameSystem"), params);
-    if(gameSys) impl.reset((GameSystem*)gameSys);
-    else std::cerr << "Failed to find the GameSystem class" << std::endl;
-}
-void Game::Update(const std::shared_ptr<Controller> &k) {
-    impl->impl->Update(*this, k);
+Int32 GameSystem::GetWidth() const {
+    return impl->width;
 }
 
-void Game::Draw() {
-    impl->impl->Draw(*this);
-}
-
-void Game::SetInterpolation(double interp) {
-    impl->impl->interp = interp;
+Int32 GameSystem::GetHeight() const {
+    return impl->height;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -109,7 +98,7 @@ GameSystemImplementation::GameSystemImplementation(Int32 inWidth, Int32 inHeight
 GameSystemImplementation::~GameSystemImplementation() {
 }
 
-void GameSystemImplementation::Update(Game &inScene, const std::shared_ptr<Controller> &k) {
+void GameSystemImplementation::Update(GameSystem &game, const std::shared_ptr<Controller> &k) {
     pcamx = camx; 
     pcamy = camy; 
     if(k->left)  camx -= 0.1f;
@@ -117,10 +106,10 @@ void GameSystemImplementation::Update(Game &inScene, const std::shared_ptr<Contr
     if(k->up) camy += 0.1f;
     if(k->down) camy -= 0.1f;
 }
-void GameSystemImplementation::Draw(Game &inScene){
+void GameSystemImplementation::Draw(GameSystem &game){
     if(pcamx != camx || pcamy != camy) {
-        float icamx = pcamx+(camx-pcamx)*float(interp);
-        float icamy = pcamy+(camy-pcamy)*float(interp);
+        float icamx = pcamx+(camx-pcamx)*float(game.interp);
+        float icamy = pcamy+(camy-pcamy)*float(game.interp);
         shader["modelview"] = glm::lookAt(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(icamx, icamy, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
         shader["camx"] = icamx;
         shader["camy"] = icamy;
