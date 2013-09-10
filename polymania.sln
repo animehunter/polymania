@@ -4,9 +4,12 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "polymania", "polymania\polymania.vcxproj", "{0CD3F6D6-8887-4F89-8F28-74E6EF41C42C}"
 	ProjectSection(ProjectDependencies) = postProject
 		{DB4846D1-FD79-4D3A-9B8B-25D83D36C790} = {DB4846D1-FD79-4D3A-9B8B-25D83D36C790}
+		{24F05FEA-3ACF-4BAC-BEB7-815A8F82A0FF} = {24F05FEA-3ACF-4BAC-BEB7-815A8F82A0FF}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "glfw3", "external\source\glfw\glfw.vcxproj", "{DB4846D1-FD79-4D3A-9B8B-25D83D36C790}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libuv", "external\source\libuv.vcxproj", "{24F05FEA-3ACF-4BAC-BEB7-815A8F82A0FF}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "glfw3", "external\source\glfw.vcxproj", "{DB4846D1-FD79-4D3A-9B8B-25D83D36C790}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -24,6 +27,14 @@ Global
 		{0CD3F6D6-8887-4F89-8F28-74E6EF41C42C}.Release|Win32.Build.0 = Release|Win32
 		{0CD3F6D6-8887-4F89-8F28-74E6EF41C42C}.Release|x64.ActiveCfg = Release|x64
 		{0CD3F6D6-8887-4F89-8F28-74E6EF41C42C}.Release|x64.Build.0 = Release|x64
+		{24F05FEA-3ACF-4BAC-BEB7-815A8F82A0FF}.Debug|Win32.ActiveCfg = Debug|Win32
+		{24F05FEA-3ACF-4BAC-BEB7-815A8F82A0FF}.Debug|Win32.Build.0 = Debug|Win32
+		{24F05FEA-3ACF-4BAC-BEB7-815A8F82A0FF}.Debug|x64.ActiveCfg = Debug|x64
+		{24F05FEA-3ACF-4BAC-BEB7-815A8F82A0FF}.Debug|x64.Build.0 = Debug|x64
+		{24F05FEA-3ACF-4BAC-BEB7-815A8F82A0FF}.Release|Win32.ActiveCfg = Release|Win32
+		{24F05FEA-3ACF-4BAC-BEB7-815A8F82A0FF}.Release|Win32.Build.0 = Release|Win32
+		{24F05FEA-3ACF-4BAC-BEB7-815A8F82A0FF}.Release|x64.ActiveCfg = Release|x64
+		{24F05FEA-3ACF-4BAC-BEB7-815A8F82A0FF}.Release|x64.Build.0 = Release|x64
 		{DB4846D1-FD79-4D3A-9B8B-25D83D36C790}.Debug|Win32.ActiveCfg = Debug|Win32
 		{DB4846D1-FD79-4D3A-9B8B-25D83D36C790}.Debug|Win32.Build.0 = Debug|Win32
 		{DB4846D1-FD79-4D3A-9B8B-25D83D36C790}.Debug|x64.ActiveCfg = Debug|x64

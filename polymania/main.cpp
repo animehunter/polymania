@@ -31,6 +31,7 @@
 #ifdef _MSC_VER
 #pragma comment(lib, "opengl32.lib")
 #pragma comment(lib, "glfw3.lib")
+#pragma comment(lib, "libuv.lib")
 #endif
 
 #include "context.hpp"
