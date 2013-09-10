@@ -4,6 +4,8 @@
 *.exe
 *.suo
 *.vcxproj.user
-*/Release/*
 *.sdf
 *.CppClean.log
+*.1.tlog
+*.lastbuildstate
+*.intermediate.manifest

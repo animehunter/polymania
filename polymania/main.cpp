@@ -81,16 +81,6 @@ inline bool FloatInside(float a, float low, float high, const float epsilon = st
     return a > (low+epsilon) && a < (high-epsilon);
 }
 
-inline std::string FileRead(const std::string &path) {
-    std::ifstream f(path);
-
-    if(!f) {
-        return "";
-    }
-    return std::string(std::istreambuf_iterator<char>(f), std::istreambuf_iterator<char>());
-}
-
-
 ///////////////////////////////////////////////////////////
 
 const int WIDTH = 800;
