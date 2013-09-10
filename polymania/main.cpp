@@ -41,6 +41,7 @@
 #include "resource.hpp"
 #include "shader.hpp"
 #include "object.hpp"
+#include "game.hpp"
 
 #ifdef __arm__
 #include "rpi/context_rpi.hpp"
@@ -52,6 +53,13 @@
 #include "other/timer_glfw.hpp"
 #endif
 
+//////////////////////////////////////////////////////////////////////////
+// Globals
+const int WIDTH = 800;
+const int HEIGHT = 600;
+const bool DEFAULT_VSYNC_ON = true;
+const UInt32 TICK_PER_SEC = 20;
+const double SEC_PER_TICK = 1.0/TICK_PER_SEC;
 
 ///////////////////////////////////////////////////////////
 // Utils
@@ -83,88 +91,16 @@ inline bool FloatInside(float a, float low, float high, const float epsilon = st
 
 ///////////////////////////////////////////////////////////
 
-const int WIDTH = 800;
-const int HEIGHT = 600;
 
-int GWindowWidth = WIDTH;
-int GWindowHeight = HEIGHT;
-
-class Scene {
-public:
-    double interp; //an interpolation value between the previous and the current frame for the purpose of drawing
-    ResourceManager resMan;
-    RenderBatcher batch;
-    Shader shader;
-    float pcamx, pcamy;
-    float camx, camy;
-
-    Scene();
-    ~Scene();
-    void Update(std::shared_ptr<Controller> k);
-    void Draw();
-};
-
-Scene::Scene() : camx(0), camy(0) {
-    resMan.AddResourceLoader<ResourceShader>("glf");
-    resMan.AddResourceLoader<ResourceShader>("glv");
-
-    Shader::SetBlendFunc(Shader::BLEND_Transparent);
-
-    std::string vertshader = resMan.Load<ResourceShader>("shaders/default.glv")->string;
-    std::string fragshader = resMan.Load<ResourceShader>("shaders/default.glf")->string;
-    shader.Initialize(vertshader, fragshader, true);
-    shader["projection"] = glm::perspective(60.0f, float(GWindowWidth)/float(GWindowHeight), 0.1f, 100.0f);
-    shader["modelview"] = glm::lookAt(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(camx, camy, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-    batch.SetShader(shader);
-
-    batch.Queue( 0.0f,  0.0f, 1.0f, 255, 120, 120, 255);
-    batch.Queue(-0.5f,  0.0f, 1.0f, 0, 255, 255, 150);
-    batch.Queue(-0.5f, -0.5f, 1.0f, 0, 255, 0, 0);
-
-    batch.Queue( 0.0f,  0.0f, 1.0f, 255, 120, 120, 255);
-    batch.Queue(-0.5f,  -0.5f, 1.0f, 0, 255, 0, 0);
-    batch.Queue( 0.0f, -0.5f, 1.0f, 0, 255, 255, 150);
-    batch.Upload(RenderBatcher::USAGE_Static);
-}
-Scene::~Scene() {
-
-}
-void Scene::Update(std::shared_ptr<Controller> k) {
-    pcamx = camx; 
-    pcamy = camy; 
-    if(k->left)  camx -= 0.1f;
-    if(k->right)  camx += 0.1f;
-    if(k->up) camy += 0.1f;
-    if(k->down) camy -= 0.1f;
-}
-
-void Scene::Draw() {
-    if(pcamx != camx || pcamy != camy) {
-        float icamx = pcamx+(camx-pcamx)*float(interp);
-        float icamy = pcamy+(camy-pcamy)*float(interp);
-        shader["modelview"] = glm::lookAt(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(icamx, icamy, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-        shader["camx"] = icamx;
-        shader["camy"] = icamy;
-    }
-    batch.Draw();
-}
 
 // TODO add this to message queue
-static void OnResize(GLFWwindow *window, int w, int h) {
+/*static void OnResize(GLFWwindow *window, int w, int h) {
     GWindowWidth = w;
     GWindowHeight = h;
     glViewport (0, 0, (GLsizei) w, (GLsizei) h);
-}
+}*/
 
-static void EngineMain(std::shared_ptr<Context> mainWindow) {
-#ifdef __arm__
-    auto timer = std::make_shared<RaspberryPiTimer>();
-    auto ctlr = std::make_shared<RaspberryPiController>();
-#else
-    auto timer = std::make_shared<GlfwTimer>();
-    auto ctlr = std::make_shared<GlfwController>();
-#endif
-    
+static void InitGL() {
     // setup GL
     glDisable(GL_BLEND);
     glDisable(GL_DITHER);     
@@ -181,16 +117,26 @@ static void EngineMain(std::shared_ptr<Context> mainWindow) {
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
     glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
+}
 
+static void EngineMain(std::shared_ptr<Context> mainWindow) {
+#ifdef __arm__
+    auto timer = std::make_shared<RaspberryPiTimer>();
+    auto ctlr = std::make_shared<RaspberryPiController>();
+#else
+    auto timer = std::make_shared<GlfwTimer>();
+    auto ctlr = std::make_shared<GlfwController>();
+#endif
 
+    InitGL();
     AutoVao autoVao; // auto VAO for opengl 3+
-    const double SEC_PER_TICK = 1/20.0;
+
     Int32 fpsFrames = 0;
     double fpsElapsed = 0.0;
     double timeFrame = 0.0;
     double timeNextTick = 0.0;
     bool  running = true;
-    Scene scene;
+    Game game(WIDTH, HEIGHT);
 
     while(running) {
         double timeStart = timer->Seconds();
@@ -201,17 +147,17 @@ static void EngineMain(std::shared_ptr<Context> mainWindow) {
         
         int frameSkips = 10; // allow up to 8 frame skips
         while(timer->Seconds() > timeNextTick && frameSkips > 0) {
-            scene.Update(ctlr);
+            game.Update(ctlr);
             frameSkips--;
             timeNextTick += SEC_PER_TICK;
         }
         if(frameSkips < 10)
             ctlr->Reset();
         
-        scene.interp = (timer->Seconds() + SEC_PER_TICK - timeNextTick)/SEC_PER_TICK;
+        game.SetInterpolation((timer->Seconds() + SEC_PER_TICK - timeNextTick)/SEC_PER_TICK);
         
         glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
-        scene.Draw();
+        game.Draw();
         mainWindow->SwapBuffers();
         
         timeFrame += (timer->Seconds() - timeStart);
@@ -234,21 +180,20 @@ static void EngineMain(std::shared_ptr<Context> mainWindow) {
 int main() {
     Object::StaticInit();
     Object* testInstance = Object::StaticConstructObject(Object::StaticFindClass("Test"));
-    if(testInstance) testInstance->Send(Event("TestEvent"));
-    if(testInstance) testInstance->Send(Event("BadEventName"));
+    Event::Data params;
+    if(testInstance) testInstance->Send(Event("TestEvent", params));
+    if(testInstance) testInstance->Send(Event("BadEventName", params));
 
 #ifdef __arm__
     auto ctx = std::make_shared<RaspberryPiContext>();
 #else
     auto ctx = std::make_shared<GlfwContext>();
 #endif
-    
-    bool vsync = true;
-    if(ctx->Initialize("Polymania Project", WIDTH, HEIGHT, false, vsync) < 0) {
+
+    if(ctx->Initialize("Polymania Project", WIDTH, HEIGHT, false, DEFAULT_VSYNC_ON) < 0) {
         std::cerr << "Failed to initialize context" << std::endl;
         return -1;
     }
-
 
     std::cout << "Renderer: " << (const char*)glGetString(GL_RENDERER) << std::endl;
     std::cout << "Version: " << (const char*)glGetString(GL_VERSION) << std::endl;
@@ -258,8 +203,6 @@ int main() {
     //glfwSetWindowSizeCallback(mainWindow, &OnResize);
 
     EngineMain(ctx);
-
     ctx->Terminate();
-
     return 0;
 }

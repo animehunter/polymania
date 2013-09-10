@@ -6,6 +6,7 @@
 #include "types.hpp"
 #include "controller.hpp"
 #include "object.hpp"
+#include "game.hpp"
 
 class Test : public DeclaredClass<Test> {
 public:
@@ -18,10 +19,12 @@ public:
         return true;
     }
 
-    void Update(Scene &scene, std::shared_ptr<Controller> k){}
-    void Draw(Scene &scene){}
+    Test(const Event::Data &ev){}
+    void Update(Game &scene, const std::shared_ptr<Controller> &k){}
+    void Draw(Game &scene){}
 };
 
 CLASS_BEGIN_REGISTRATION
     CLASS_REGISTER(Test)
+    CLASS_REGISTER(GameSystem)
 CLASS_END_REGISTRATION

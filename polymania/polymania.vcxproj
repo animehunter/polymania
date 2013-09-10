@@ -157,6 +157,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\external\source\glew.c" />
+    <ClCompile Include="game.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="object.cpp" />
     <ClCompile Include="other\context_glfw.cpp" />
@@ -170,6 +171,7 @@
     <ClInclude Include="asyncmodel.hpp" />
     <ClInclude Include="context.hpp" />
     <ClInclude Include="controller.hpp" />
+    <ClInclude Include="game.hpp" />
     <ClInclude Include="object.hpp" />
     <ClInclude Include="other\context_glfw.hpp" />
     <ClInclude Include="other\controller_glfw.hpp" />
