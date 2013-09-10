@@ -64,8 +64,8 @@ void GameSystem::Draw( Game &scene ) {
 
 Game::Game(Int32 inWidth, Int32 inHeight) {
     Event::Data params;
-    params["inWidth"] = MetaField(inWidth);
-    params["inHeight"] = MetaField(inHeight);
+    params["inWidth"] = inWidth;
+    params["inHeight"] = inHeight;
     Object *gameSys = Object::StaticConstructObject(Object::StaticFindClass("GameSystem"), params);
     if(gameSys) impl.reset((GameSystem*)gameSys);
     else std::cerr << "Failed to find the GameSystem class" << std::endl;
