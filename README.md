@@ -22,6 +22,7 @@
 - Mac OSX 10.7 or higher
 - Android 2.2 or Higher
 - iOS 4.3 or Higher
+- Raspberry PI
 
 
 ### Supported Graphics API:
