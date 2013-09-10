@@ -251,8 +251,9 @@ int main() {
 #else
     auto ctx = std::make_shared<GlfwContext>();
 #endif
-
-    if(ctx->Initialize("Polymania Project", WIDTH, HEIGHT, false, false) < 0) {
+    
+    bool vsync = true;
+    if(ctx->Initialize("Polymania Project", WIDTH, HEIGHT, false, vsync) < 0) {
         std::cerr << "Failed to initialize context" << std::endl;
         return -1;
     }

@@ -55,12 +55,7 @@ inline bool CheckRequiredGLExtension() {
 }
 
 inline void EnableVSync() {
-#if defined(_WIN32) || defined(WIN32)
-    if(WGLEW_EXT_swap_control)
-        wglSwapIntervalEXT(1);
-#else
     glfwSwapInterval(1);
-#endif
 }
 
 static void OnError(int code, const char *err) {
