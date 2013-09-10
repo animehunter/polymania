@@ -1,3 +1,6 @@
 [submodule "external/source/libuv"]
 	path = external/source/libuv
 	url = https://github.com/joyent/libuv
+[submodule "external/source/glfw"]
+	path = external/source/glfw
+	url = https://github.com/glfw/glfw.git
