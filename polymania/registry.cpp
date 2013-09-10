@@ -14,7 +14,7 @@ public:
         HANDLER_REGISTER(TestEvent)
     HANDLER_END_REGISTRATION
 
-    bool OnTestEvent(Event &ev){
+    bool OnTestEvent(const Event &ev){
         std::cout << "Test::OnTestEvent" << std::endl;
         return true;
     }

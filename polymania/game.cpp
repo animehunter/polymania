@@ -37,12 +37,12 @@ public:
 
 //////////////////////////////////////////////////////////////////////////
 // Messages
-bool GameSystem::OnCloseWindow(Event &ev) {
+bool GameSystem::OnCloseWindow(const Event &ev) {
     quitRequested = true;
     return true;
 }
 
-bool GameSystem::OnResizedWindow(Event &ev) {
+bool GameSystem::OnResizedWindow(const Event &ev) {
     impl->width = ev["inWidth"];
     impl->height = ev["inHeight"];
     return true;

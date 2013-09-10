@@ -10,7 +10,7 @@
 // Globals
 std::unordered_map<std::string, Class> Object::globalClasses;
 
-Event::Data Event::nullData = Event::Data();
+const Event::Data Event::nullData = Event::Data();
 
 std::string MetaField::typeNames[TYPE_Max];
 const MetaField MetaField::nullField = MetaField();
@@ -65,8 +65,7 @@ Object* Object::StaticConstructObject(Class* cls, const Event::Data& data) {
     O->_class = cls;
 
     // Construct the object and return it
-    Event ev(cls->name, data);
-    cls->constructor(O, ev);
+    cls->constructor(O, Event(cls->name, data));
     return O;
 }
 
@@ -89,7 +88,7 @@ void Object::Send( const Event &ev ) {
     auto handler = FindEventHandler(ev.type);
     // If the event couldn't be found
     if(handler) {
-        (this->*handler)(ev);
+        handler(this, ev);
     }
 }
 

@@ -53,7 +53,7 @@ private:
 
 struct Event {    
     // Handler function
-    typedef bool (Object::*Handler)(const Event &ev);
+    typedef bool (*Handler)(Object*, const Event &ev);
     typedef std::unordered_map<std::string, MetaField> Data;
 
     // Events must have a type and priority
@@ -78,7 +78,7 @@ struct Event {
     const Int32 priority;
 
 private:
-    static Data nullData;
+    static const Data nullData;
     const Data& data;
 };
 
@@ -144,11 +144,12 @@ private:
     }
 
 protected:
-    template<typename HandlerType>
-    static void RegisterHandler(Class* klass, HandlerType handlerFunction, const char* handlerName){
+    static void RegisterHandler(Class* klass, Event::Handler handlerFunction, const char* handlerName){
         klass->handlers.insert(
-            std::pair<const std::string, Event::Handler>(handlerName, (Event::Handler) handlerFunction));
+            std::pair<const std::string, Event::Handler>(handlerName, handlerFunction));
     }
+    template<bool(TKlass::*Handler)(const Event&)>
+    static bool MakeStaticHandler(Object *self, const Event& ev) { return (((TKlass*)self)->*Handler)(ev); }
 
     typedef TKlass Klass;
     friend Object;
@@ -159,5 +160,5 @@ protected:
 #define CLASS_END_REGISTRATION }
 
 #define HANDLER_BEGIN_REGISTRATION static void StaticConstructor(Class* klass) {
-#define HANDLER_REGISTER(Handler) RegisterHandler(klass, &Klass::On##Handler,#Handler);
+#define HANDLER_REGISTER(Handler) RegisterHandler(klass, &MakeStaticHandler<&Klass::On##Handler>, #Handler);
 #define HANDLER_END_REGISTRATION }

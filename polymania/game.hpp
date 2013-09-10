@@ -18,8 +18,8 @@ public:
     HANDLER_END_REGISTRATION
 
     // Implementations
-    bool OnCloseWindow(Event &ev);
-    bool OnResizedWindow(Event &ev);
+    bool OnCloseWindow(const Event &ev);
+    bool OnResizedWindow(const Event &ev);
 
     //////////////////////////////////////////////////////////////////////////
     //////////////////////////////////////////////////////////////////////////
