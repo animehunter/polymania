@@ -10,7 +10,11 @@
 // Globals
 std::unordered_map<std::string, Class> Object::globalClasses;
 
+Event::Data Event::nullData;
+
 std::string MetaField::typeNames[TYPE_Max];
+const MetaField MetaField::nullField = MetaField();
+
 void MetaField::StaticInitMetaTypeNames() {
     static_assert(sizeof(MetaField::typeNames)/sizeof(std::string) == 7, "MetaField has changed, don't forget to add the new type name below");
 #define METAFIELD_MAKE_TYPENAME(t) typeNames[t] = #t;
@@ -50,7 +54,7 @@ Class* Object::StaticFindClass(const std::string name) {
     return &iterClass->second;
 }
 
-Object* Object::StaticConstructObject(Class* cls, Event::Data& ev) {
+Object* Object::StaticConstructObject(Class* cls, const Event::Data& data) {
     // Null check
     if(!cls) return NULL;
 
@@ -61,13 +65,13 @@ Object* Object::StaticConstructObject(Class* cls, Event::Data& ev) {
     O->_class = cls;
 
     // Construct the object and return it
+    Event ev(cls->name, data);
     cls->constructor(O, ev);
     return O;
 }
 
 Object* Object::StaticConstructObject(Class* cls) {
-    Event::Data ev;
-    return StaticConstructObject(cls, ev);
+    return StaticConstructObject(cls, Event::Data());
 }
 
 void Object::StaticDestroyObject(Object* obj) {

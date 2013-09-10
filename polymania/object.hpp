@@ -7,6 +7,8 @@ class Controller;
 class GameSystem;
 
 struct MetaField {
+    static const MetaField nullField;
+
     enum ETypes {
         TYPE_Null,
         TYPE_Integer,
@@ -55,20 +57,36 @@ struct Event {
     typedef std::unordered_map<std::string, MetaField> Data;
 
     // Events must have a type and priority
-    Event(const std::string& inType, Data& data, Int32 inPriority = 0)
-        : type(inType), data(data), priority(inPriority) {};
+    Event(const std::string& inType, const Data& inData, Int32 inPriority = 0)
+        : type(inType), data(inData), priority(inPriority) {};
+
+    Event(const std::string& inType, Int32 inPriority = 0)
+        : type(inType), data(nullData), priority(inPriority) {};
+
+    const MetaField &Get(const std::string& inName) const {
+        auto it = data.find(inName);
+        if(it == data.end()) return MetaField::nullField;
+        else return it->second;
+    }
+
+    const MetaField &operator[](const std::string& inName) const {
+        return Get(inName);
+    }
 
     // Event info
     const std::string& type;
-    Data& data;
     const Int32 priority;
+
+private:
+    static Data nullData;
+    const Data& data;
 };
 
 class Class {
 public:
     // Constructors
     typedef void (*StaticConstructor)(Class* klass);
-    typedef void (*Constructor)(void* object, Event::Data& ev);
+    typedef void (*Constructor)(void* object, const Event& ev);
     typedef void (*Destructor)(void* object);
 
     // Initialize a class
@@ -98,7 +116,7 @@ protected:
 public:
     static bool StaticInit();
     static Class* StaticFindClass(const std::string name);
-    static Object* StaticConstructObject(Class* cls, Event::Data& ev);
+    static Object* StaticConstructObject(Class* cls, const Event::Data& data);
     static Object* StaticConstructObject(Class* cls);
     static void StaticDestroyObject(Object* obj);
     void StaticConstructor();
@@ -118,7 +136,7 @@ template<class TKlass>
 class DeclaredClass : public Object {
 private:
     void* operator new(size_t size, void* mem){return mem;}   
-    static void InternalConstructor(void* object, Event::Data& ev){new(object) Klass(ev);}
+    static void InternalConstructor(void* object, const Event& ev){new(object) Klass(ev);}
     static void InternalDestructor(void* object){((Klass*)object)->~Klass();}
     static void StaticRegisterClass(const char* klassName){
         globalClasses.insert(std::make_pair<std::string, Class>(klassName,

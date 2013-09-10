@@ -19,7 +19,7 @@ public:
         return true;
     }
 
-    Test(const Event::Data &ev){}
+    Test(const Event &ev){}
     void Update(GameSystem &game, const std::shared_ptr<Controller> &k){}
     void Draw(GameSystem &game){}
 };

@@ -43,14 +43,13 @@ bool GameSystem::OnCloseWindow(Event &ev) {
 }
 
 bool GameSystem::OnResizedWindow(Event &ev) {
-    auto &data = ev.data;
-    impl->width = data["inWidth"];
-    impl->height = data["inHeight"];
+    impl->width = ev["inWidth"];
+    impl->height = ev["inHeight"];
     return true;
 }
 //////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////
-GameSystem::GameSystem(Event::Data &ev) : interp(0.0), quitRequested(false),
+GameSystem::GameSystem(const Event &ev) : interp(0.0), quitRequested(false),
                                           impl(new GameSystemImplementation(ev["inWidth"], ev["inHeight"])) {
 
 }

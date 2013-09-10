@@ -116,8 +116,7 @@ int GlfwContext::SwapBuffers() {
 int GlfwContext::Poll() {
     glfwPollEvents();
     if(glfwGetKey(context, GLFW_KEY_ESCAPE) || glfwWindowShouldClose(context)) {
-        Event::Data ev;
-        ((Object*)GGameSys)->Send(Event("CloseWindow", ev));
+        ((Object*)GGameSys)->Send(Event("CloseWindow"));
     }
 
     return 0;

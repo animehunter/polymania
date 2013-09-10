@@ -23,7 +23,7 @@ public:
 
     //////////////////////////////////////////////////////////////////////////
     //////////////////////////////////////////////////////////////////////////
-    GameSystem(Event::Data &ev);
+    GameSystem(const Event &ev);
     void Update(const std::shared_ptr<Controller> &inController) { Update(*this, inController); }
     void Draw() { Draw(*this); }
 
