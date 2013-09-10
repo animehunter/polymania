@@ -6,3 +6,4 @@
 *.vcxproj.user
 */Release/*
 *.sdf
+*.CppClean.log
