@@ -56,11 +56,11 @@
     <ClCompile Include="resource.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\external\source\glew.c">
-      <Filter>external\source</Filter>
-    </ClCompile>
     <ClCompile Include="game.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\external\source\glew.cpp">
+      <Filter>external\source</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
