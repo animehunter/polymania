@@ -22,16 +22,16 @@ void GlfwController::Poll(Context *ctx) {
         right = true;
     }
 
-    if(glfwGetKey(gwin, GLFW_KEY_4) != GLFW_RELEASE) {
+    if(glfwGetKey(gwin, GLFW_KEY_KP_4) != GLFW_RELEASE) {
         a = true;
     }
-    if(glfwGetKey(gwin, GLFW_KEY_5) != GLFW_RELEASE) {
+    if(glfwGetKey(gwin, GLFW_KEY_KP_5) != GLFW_RELEASE) {
         b = true;
     }
-    if(glfwGetKey(gwin, GLFW_KEY_1) != GLFW_RELEASE) {
+    if(glfwGetKey(gwin, GLFW_KEY_KP_1) != GLFW_RELEASE) {
         x = true;
     }
-    if(glfwGetKey(gwin, GLFW_KEY_2) != GLFW_RELEASE) {
+    if(glfwGetKey(gwin, GLFW_KEY_KP_2) != GLFW_RELEASE) {
         y = true;
     }
 

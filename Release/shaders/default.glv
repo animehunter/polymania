@@ -11,5 +11,5 @@ uniform float camy;
 void main()
 {
    inout_Color = in_Color;
-   gl_Position = projection*modelview*vec4(in_Position.x*(cos(camx*3.142)+2), in_Position.y*(sin(camy*3.142)+2), in_Position.z-2, 1.0);
+   gl_Position = projection*modelview*vec4(in_Position, 1.0);
 }

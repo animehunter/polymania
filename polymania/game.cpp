@@ -24,8 +24,8 @@ public:
     ResourceManager resMan;
     RenderBatcher batch;
     Shader shader;
-    float pcamx, pcamy;
-    float camx, camy;
+    float pcamx, pcamy, pcamz;
+    float camx, camy, camz;
 
     GameSystemImplementation(Int32 inWidth, Int32 inHeight);
     ~GameSystemImplementation();
@@ -78,7 +78,7 @@ Int32 GameSystem::GetHeight() const {
 }
 
 //////////////////////////////////////////////////////////////////////////
-GameSystemImplementation::GameSystemImplementation(Int32 inWidth, Int32 inHeight) : width(inWidth), height(inHeight), camx(0), camy(0) {
+GameSystemImplementation::GameSystemImplementation(Int32 inWidth, Int32 inHeight) : width(inWidth), height(inHeight), camx(0), camy(0), camz(3.0f) {
     resMan.AddResourceLoader<ResourceShader>("glf");
     resMan.AddResourceLoader<ResourceShader>("glv");
 
@@ -88,16 +88,51 @@ GameSystemImplementation::GameSystemImplementation(Int32 inWidth, Int32 inHeight
     std::string fragshader = resMan.Load<ResourceShader>("shaders/default.glf")->string;
     shader.Initialize(vertshader, fragshader, true);
     SetPerspective(width, height);
-    LookAt(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(camx, camy, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    LookAt(glm::vec3(0.0f, 0.0f, camz), glm::vec3(camx, camy, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
     batch.SetShader(shader);
 
-    batch.Queue( 0.0f,  0.0f, 1.0f, 255, 120, 120, 255);
-    batch.Queue(-0.5f,  0.0f, 1.0f, 0, 255, 255, 150);
-    batch.Queue(-0.5f, -0.5f, 1.0f, 0, 255, 0, 0);
+    Vertex verts[] = {
+        // front
+        {0.0f,  0.0f, 1.0f, 255, 0, 0, 255},
+        {-1.0f,  0.0f, 1.0f, 0, 0, 255, 150},
+        {-1.0f, -1.0f, 1.0f, 0, 255, 0, 0},
+        {0.0f,  0.0f, 1.0f, 255, 0, 0, 255},
+        {-1.0f,  -1.0f, 1.0f, 0, 255, 0, 0},
+        {0.0f, -1.0f, 1.0f, 0, 0, 255, 150},
 
-    batch.Queue( 0.0f,  0.0f, 1.0f, 255, 120, 120, 255);
-    batch.Queue(-0.5f,  -0.5f, 1.0f, 0, 255, 0, 0);
-    batch.Queue( 0.0f, -0.5f, 1.0f, 0, 255, 255, 150);
+        // top
+        {0.0f,  0.0f, 0.0f, 255, 0, 0, 255},
+        {-1.0f,  0.0f, 0.0f, 0, 0, 255, 150},
+        {-1.0f,  0.0f, 1.0f, 0, 255, 0, 0},
+        {0.0f,  0.0f, 0.0f, 255, 0, 0, 255},
+        {-1.0f,  0.0f, 1.0f, 0, 255, 0, 0},
+        {0.0f,  0.0f, 1.0f, 0, 0, 255, 150},
+
+        // bottom
+        {0.0f,  -1.0f, 1.0f, 255, 0, 0, 255},
+        {-1.0f, -1.0f, 1.0f, 0, 0, 255, 150},
+        {-1.0f, -1.0f, 0.0f, 0, 255, 0, 0},
+        {0.0f,  -1.0f, 1.0f, 255, 0, 0, 255},
+        {-1.0f, -1.0f, 0.0f, 0, 255, 0, 0},
+        {0.0f,  -1.0f, 0.0f, 0, 0, 255, 150},
+
+        // left
+        {-1.0f,  0.0f, 1.0f, 255, 0, 0, 255},
+        {-1.0f,  0.0f, 0.0f, 0, 0, 255, 150},
+        {-1.0f, -1.0f, 0.0f, 0, 255, 0, 0},
+        {-1.0f,  0.0f, 1.0f, 255, 0, 0, 255},
+        {-1.0f, -1.0f, 0.0f, 0, 255, 0, 0},
+        {-1.0f, -1.0f, 1.0f, 0, 0, 255, 150},
+
+        // right
+        {0.0f,  0.0f, 0.0f, 255, 0, 0, 255},
+        {0.0f,  0.0f, 1.0f, 0, 0, 255, 150},
+        {0.0f, -1.0f, 1.0f, 0, 255, 0, 0},
+        {0.0f,  0.0f, 0.0f, 255, 0, 0, 255},
+        {0.0f, -1.0f, 1.0f, 0, 255, 0, 0},
+        {0.0f, -1.0f, 0.0f, 0, 0, 255, 150}
+    };
+    batch.Queue(verts, sizeof(verts)/sizeof(Vertex));
     batch.Upload(RenderBatcher::USAGE_Static);
 }
 
@@ -107,16 +142,20 @@ GameSystemImplementation::~GameSystemImplementation() {
 void GameSystemImplementation::Update(GameSystem &game, const std::shared_ptr<Controller> &k) {
     pcamx = camx; 
     pcamy = camy; 
+    pcamz = camz;
     if(k->left)  camx -= 0.1f;
     if(k->right)  camx += 0.1f;
     if(k->up) camy += 0.1f;
     if(k->down) camy -= 0.1f;
+    if(k->x) camz -= 0.1f;
+    if(k->y) camz += 0.1f;
 }
 void GameSystemImplementation::Draw(GameSystem &game){
-    if(pcamx != camx || pcamy != camy) {
+    if(pcamx != camx || pcamy != camy || pcamz != camz) {
         float icamx = pcamx+(camx-pcamx)*float(game.interp);
         float icamy = pcamy+(camy-pcamy)*float(game.interp);
-        LookAt(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(icamx, icamy, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        float icamz = pcamz+(camz-pcamz)*float(game.interp);
+        LookAt(glm::vec3(icamx, icamy, icamz), glm::vec3(icamx, icamy, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
         shader["camx"] = icamx;
         shader["camy"] = icamy;
     }
