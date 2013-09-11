@@ -74,6 +74,8 @@ Object* Object::StaticConstructObject(Class* cls, const Event::Data& data) {
     // Null check
     if(!cls) return NULL;
 
+    if(cls->size > 1024*1024) std::cerr << "WARNING Allocating object above 1MB, actual size: " << cls->size << std::endl;
+
     // Allocate the object
     Object *O = (Object*) malloc((UInt) cls->size);
 

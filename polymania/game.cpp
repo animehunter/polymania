@@ -33,6 +33,12 @@ public:
     void Update(GameSystem &game, const std::shared_ptr<Controller> &inController);
     void Draw(GameSystem &game);
 
+    void SetPerspective(Int32 width, Int32 height) {
+        shader["projection"] = glm::perspective(60.0f, float(width)/float(height), 0.1f, 100.0f);
+    }
+    void LookAt(const glm::vec3 &eye, const glm::vec3 &target, const glm::vec3 &up) {
+        shader["modelview"] = glm::lookAt(eye, target, up);
+    }
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -45,6 +51,7 @@ bool GameSystem::OnCloseWindow(const Event &ev) {
 bool GameSystem::OnResizedWindow(const Event &ev) {
     impl->width = ev["inWidth"];
     impl->height = ev["inHeight"];
+    impl->SetPerspective(impl->width, impl->height);
     return true;
 }
 //////////////////////////////////////////////////////////////////////////
@@ -80,8 +87,8 @@ GameSystemImplementation::GameSystemImplementation(Int32 inWidth, Int32 inHeight
     std::string vertshader = resMan.Load<ResourceShader>("shaders/default.glv")->string;
     std::string fragshader = resMan.Load<ResourceShader>("shaders/default.glf")->string;
     shader.Initialize(vertshader, fragshader, true);
-    shader["projection"] = glm::perspective(60.0f, float(width)/float(height), 0.1f, 100.0f);
-    shader["modelview"] = glm::lookAt(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(camx, camy, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    SetPerspective(width, height);
+    LookAt(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(camx, camy, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
     batch.SetShader(shader);
 
     batch.Queue( 0.0f,  0.0f, 1.0f, 255, 120, 120, 255);
@@ -109,7 +116,7 @@ void GameSystemImplementation::Draw(GameSystem &game){
     if(pcamx != camx || pcamy != camy) {
         float icamx = pcamx+(camx-pcamx)*float(game.interp);
         float icamy = pcamy+(camy-pcamy)*float(game.interp);
-        shader["modelview"] = glm::lookAt(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(icamx, icamy, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        LookAt(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(icamx, icamy, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
         shader["camx"] = icamx;
         shader["camy"] = icamy;
     }
