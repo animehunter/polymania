@@ -76,15 +76,19 @@ protected:
 
 class Resource {
 public:
-    Int32 refCount;
-    std::string location;
-
     Resource() : refCount(0) {}
     virtual ~Resource() {}
 
     // all Resource types must return a default resource if not found
-    virtual bool Load(ResourceMemoryAllocator &inAllocator, ResourceIo &inIo)=0;
+    virtual bool Load(ResourceMemoryAllocator &inAllocator, ResourceDirectory &inDir)=0;
     virtual bool Unload()=0;
+
+    const std::string &GetLocation() const { return location; }
+
+private:
+    Int32 refCount;
+    std::string location;
+    friend class ResourceCache;
 };
 
 typedef std::shared_ptr<Resource> ResourceHandle;

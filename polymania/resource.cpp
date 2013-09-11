@@ -210,33 +210,21 @@ ResourceHandle ResourceCache::Load(const std::string &inLocation) {
 }
 
 bool ResourceCache::Reload(const ResourceHandle &inHandle) {
-    inHandle->Unload();
-
-    auto res = ResourceDirectory::instance->Open(inHandle->location, ResourceDirectory::PERMISSION_ReadOnly);
-    auto resIo = res.GetResult();
-
-    if(!resIo) return false;
-
-    return inHandle->Load(*ResourceMemoryAllocator::instance, *resIo.get());
+    if(!inHandle->Unload()) return false;
+    return inHandle->Load(*ResourceMemoryAllocator::instance, *ResourceDirectory::instance);
 }
 
 Resource *ResourceCache::LoadRaw( const std::string & inLocation ) {
-    auto res = ResourceDirectory::instance->Open(inLocation, ResourceDirectory::PERMISSION_ReadOnly);
-    auto resIo=res.GetResult();
-    if(resIo) {
-        Resource *newRes = (Resource*)ResourceMemoryAllocator::instance->Allocate(typeSize);
-        constructor(newRes);
-        if(newRes->Load(*ResourceMemoryAllocator::instance, *resIo.get())) {
-            newRes->refCount++;
-            newRes->location = inLocation;
-            linkedResources[inLocation] = newRes;
-            return newRes;
-        } else {
-            newRes->~Resource();
-            ResourceMemoryAllocator::instance->Free(newRes);
-            return 0;
-        }
+    Resource *newRes = (Resource*)ResourceMemoryAllocator::instance->Allocate(typeSize);
+    constructor(newRes);
+    newRes->location = inLocation;
+    if(newRes->Load(*ResourceMemoryAllocator::instance, *ResourceDirectory::instance)) {
+        newRes->refCount++;
+        linkedResources[inLocation] = newRes;
+        return newRes;
     } else {
+        newRes->~Resource();
+        ResourceMemoryAllocator::instance->Free(newRes);
         return 0;
     }
 }

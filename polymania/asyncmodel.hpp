@@ -57,7 +57,7 @@ public:
         return asyncState ? asyncState->isComplete : true;
     }
 
-    // Get the result, will block until the IO require is complete
+    // Get the result, will block until the IO request is complete
     inline T GetResult() const { 
         if(asyncState) {
             asyncState->completionRoutine->Call();

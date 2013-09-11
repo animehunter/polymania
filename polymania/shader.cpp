@@ -404,8 +404,14 @@ void Shader::SetBlendFunc(BlendFunc inBlend) {
     }
 }
 
-bool ResourceShader::Load( ResourceMemoryAllocator &inAllocator, ResourceIo &inIo ) {
+bool ResourceShader::Load( ResourceMemoryAllocator &inAllocator, ResourceDirectory &inDir ) {
     allocator = &inAllocator;
+
+    auto res = ResourceDirectory::instance->Open(GetLocation(), ResourceDirectory::PERMISSION_ReadOnly);
+    auto resIo = res.GetResult();
+
+    if(!resIo) return false;
+
     Int size = 0;
     Int realSize = 0;
     Int bytesRead;
@@ -415,7 +421,7 @@ bool ResourceShader::Load( ResourceMemoryAllocator &inAllocator, ResourceIo &inI
         size += increment;
         string = (char*)allocator->Reallocate(string, size+1);
         
-        bytesRead = inIo.Read(string+size-increment, increment).GetResult();
+        bytesRead = resIo->Read(string+size-increment, increment).GetResult();
         realSize += bytesRead;
 
         if(bytesRead < increment) break;
