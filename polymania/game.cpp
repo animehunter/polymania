@@ -78,7 +78,7 @@ Int32 GameSystem::GetHeight() const {
 }
 
 //////////////////////////////////////////////////////////////////////////
-GameSystemImplementation::GameSystemImplementation(Int32 inWidth, Int32 inHeight) : width(inWidth), height(inHeight), camx(0), camy(0), camz(3.0f) {
+GameSystemImplementation::GameSystemImplementation(Int32 inWidth, Int32 inHeight) : width(inWidth), height(inHeight), camx(0), camy(0), camz(6.0f) {
     resMan.AddResourceLoader<ResourceShader>("glf");
     resMan.AddResourceLoader<ResourceShader>("glv");
 
