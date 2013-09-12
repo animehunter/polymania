@@ -4,7 +4,6 @@
 #include <memory>
 #include <unordered_map>
 #include <string>
-#include <algorithm>
 #include <iostream>
 
 #include "types.hpp"
@@ -107,7 +106,7 @@ public:
 
 protected:
     ResourceIo *InternalOpen(const std::string &inLocation, Int32 inPermission) {
-        char *mode;
+        const char *mode;
         bool readonly;
         switch(inPermission) {
             case PERMISSION_ReadOnly:
@@ -246,7 +245,9 @@ void ResourceManager::AddResourceLoader(const std::string &in3CharExtName, UInt3
 
 ResourceHandle ResourceManager::Load(const std::string &location) {
     std::string ext = location.substr(location.find_last_of(".") + 1);
-    std::transform(ext.begin(), ext.end(), ext.begin(), std::tolower);
+    for(auto it = ext.begin(); it != ext.end(); ++it) {
+        *it = std::tolower(*it);
+    }
     auto it = caches.find(ext);
     if(it == caches.end()) {
         std::cerr << "Could not found ResourceLoader for: " << ext << std::endl;

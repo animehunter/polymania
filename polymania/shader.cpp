@@ -15,6 +15,7 @@
 #include <unordered_map>
 #include <iostream>
 #include <fstream>
+#include <memory>
 
 #include "types.hpp"
 #include "asyncmodel.hpp"

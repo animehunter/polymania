@@ -54,6 +54,9 @@ GameSystem::GameSystem(const Event &ev) : interp(0.0), quitRequested(false),
 
 }
 
+GameSystem::~GameSystem() {
+}
+
 void GameSystem::Update( GameSystem &game, const std::shared_ptr<Controller> &k ) {
     impl->Update(*this, k);
 }

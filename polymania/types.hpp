@@ -1,7 +1,9 @@
 #pragma once
 
 #if defined(WIN32) || defined(_WIN32)
-#define NOMINMAX
+    #ifndef NOMINMAX
+    #define NOMINMAX
+    #endif
 #endif
 
 #include <cstdint>

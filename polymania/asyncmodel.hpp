@@ -41,8 +41,8 @@ public:
     template<typename FCompletion, typename FOnComplete>
     AsyncResult(FCompletion completionFunc, FOnComplete onComplete) {
         auto completion = new AsyncCompletionHolder<FCompletion>(completionFunc);
-        auto onComplete = new AsyncCompletionHolderBase<FOnComplete>(onComplete);
-        asyncState = std::shared_ptr<AsyncState>(new AsyncState(completion, onComplete));
+        auto complete = new AsyncCompletionHolder<FOnComplete>(onComplete);
+        asyncState = std::shared_ptr<AsyncState>(new AsyncState(completion, complete));
     }
 
     ~AsyncResult() {

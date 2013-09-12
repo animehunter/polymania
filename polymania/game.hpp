@@ -24,6 +24,7 @@ public:
     //////////////////////////////////////////////////////////////////////////
     //////////////////////////////////////////////////////////////////////////
     GameSystem(const Event &ev);
+    ~GameSystem();
     void Update(const std::shared_ptr<Controller> &inController) { Update(*this, inController); }
     void Draw() { Draw(*this); }
 
