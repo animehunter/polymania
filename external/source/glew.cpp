@@ -9467,12 +9467,64 @@ static GLboolean _glewInit_GL_WIN_swap_hint (GLEW_CONTEXT_ARG_DEF_INIT)
 #endif /* GL_WIN_swap_hint */
 
 /* ------------------------------------------------------------------------- */
+static int glewExtensionHack_init = 0;
+static GLubyte glewExtensionHack_array[65536];
+static const GLubyte* glewExtensionHack_ret = 0;
+
+static const GLubyte* _glewGetExtensions(void) {
+    if (glewExtensionHack_init == 0) {
+        PFNGLGETSTRINGIPROC localGetStringi = NULL;
+
+        glewExtensionHack_init = 1;
+
+        localGetStringi = (PFNGLGETSTRINGIPROC)glewGetProcAddress((const GLubyte*)"glGetStringi");
+
+        if (localGetStringi) {
+            GLint num_extensions = 0;
+            GLint extension_idx = 0;
+            GLuint arr_idx = 0;
+
+            glGetIntegerv(GL_NUM_EXTENSIONS, &num_extensions);
+
+            for ( ; extension_idx < num_extensions; ++extension_idx) {
+                const GLubyte* extension = localGetStringi(GL_EXTENSIONS, extension_idx);
+
+                if (!extension) {
+                    glewExperimental = GL_TRUE;
+                    return 0;
+                }
+
+                while (arr_idx < sizeof(glewExtensionHack_array) && *extension != '\0') {
+                    glewExtensionHack_array[arr_idx++] = *extension++;
+                }
+
+                if (arr_idx < sizeof(glewExtensionHack_array)) {
+                    glewExtensionHack_array[arr_idx++] = ' ';
+                }
+            }
+
+            if (arr_idx < sizeof(glewExtensionHack_array)) {
+                glewExtensionHack_array[arr_idx++] = '\0';
+                glewExtensionHack_ret = glewExtensionHack_array;
+            } else {
+                /* Not enough space to copy all the extensions into the static buffer */
+                glewExperimental = GL_TRUE;
+                return 0;
+            }
+        } else {
+            glewExtensionHack_ret = glGetString(GL_EXTENSIONS);
+        }
+    }
+
+    return glewExtensionHack_ret;
+}
+
 
 GLboolean GLEWAPIENTRY glewGetExtension (const char* name)
 {    
   const GLubyte* start;
   const GLubyte* end;
-  start = (const GLubyte*)glGetString(GL_EXTENSIONS);
+  start = _glewGetExtensions();
   if (start == 0)
     return GL_FALSE;
   end = start + _glewStrLen(start);
@@ -9532,7 +9584,7 @@ GLenum GLEWAPIENTRY glewContextInit (GLEW_CONTEXT_ARG_DEF_LIST)
   }
 
   /* query opengl extensions string */
-  extStart = glGetString(GL_EXTENSIONS);
+  extStart = _glewGetExtensions();
   if (extStart == 0)
     extStart = (const GLubyte*)"";
   extEnd = extStart + _glewStrLen(extStart);

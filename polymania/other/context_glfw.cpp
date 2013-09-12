@@ -90,7 +90,6 @@ int GlfwContext::Initialize(const char *hintTitle, int hintWidth, int hintHeight
 
     glfwMakeContextCurrent(context);
 
-    glewExperimental = GL_TRUE;
     if(glewInit() != GLEW_OK) {
         std::cerr << "Failed to init glew" << std::endl;
         return -1;

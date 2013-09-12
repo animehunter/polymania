@@ -122,11 +122,11 @@ void RenderBatcher::Upload(UsageHint hintUsage) {
             hint = GL_STATIC_DRAW;
             break;
     }
-    glBufferData(GL_ARRAY_BUFFER, verts.size()*sizeof(Vertex), &verts[0], hint);
+    glBufferData(GL_ARRAY_BUFFER, nVerts*sizeof(Vertex), &verts[0], hint);
 }
 
 void RenderBatcher::Draw() {
-    glDrawArrays(GL_TRIANGLES, 0, Int32(verts.size()));
+    glDrawArrays(GL_TRIANGLES, 0, Int32(nVerts));
 }
 void RenderBatcher::UploadDraw(bool clear) {
     
