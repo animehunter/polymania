@@ -17,14 +17,15 @@ const MetaField MetaField::nullField = MetaField();
 
 void MetaField::StaticInitMetaTypeNames() {
     static_assert(sizeof(MetaField::typeNames)/sizeof(std::string) == 7, "MetaField has changed, don't forget to add the new type name below");
-#define METAFIELD_MAKE_TYPENAME(t) typeNames[t] = #t;
-   METAFIELD_MAKE_TYPENAME(TYPE_Null)
-   METAFIELD_MAKE_TYPENAME(TYPE_Integer)
-   METAFIELD_MAKE_TYPENAME(TYPE_Integer64)
-   METAFIELD_MAKE_TYPENAME(TYPE_Boolean)
-   METAFIELD_MAKE_TYPENAME(TYPE_Floating)
-   METAFIELD_MAKE_TYPENAME(TYPE_Floating64)
-   METAFIELD_MAKE_TYPENAME(TYPE_String)
+
+#define METAFIELD_MAKE_TYPENAME(ty, e) typeNames[e] = #e; { MetaField f = ty(); ty val = f; }
+    METAFIELD_MAKE_TYPENAME(NullField, TYPE_Null)
+    METAFIELD_MAKE_TYPENAME(Int32, TYPE_Integer)
+    METAFIELD_MAKE_TYPENAME(Int64, TYPE_Integer64)
+    METAFIELD_MAKE_TYPENAME(Int32, TYPE_Boolean)
+    METAFIELD_MAKE_TYPENAME(float, TYPE_Floating)
+    METAFIELD_MAKE_TYPENAME(double, TYPE_Floating64)
+    METAFIELD_MAKE_TYPENAME(std::string, TYPE_String)
 #undef METAFIELD_MAKE_TYPENAME
 }
 

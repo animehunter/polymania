@@ -6,11 +6,15 @@ class Class;
 class Controller;
 class GameSystem;
 
+struct NullField {
+    inline NullField() {}
+    template<typename T> inline NullField(T i) {}
+};
 struct MetaField {
     static const MetaField nullField;
 
     enum ETypes {
-        TYPE_Null,
+        TYPE_Null=0,
         TYPE_Integer,
         TYPE_Integer64,
         TYPE_Boolean,
@@ -34,6 +38,7 @@ struct MetaField {
 
 #define METAFIELD_MAKE_CONVERTOR(t, e, v, vin, vout) MetaField(t val) : type(e), v(vin) {} \
                                                      operator t () const { ValidateType(e); return vout; }
+    METAFIELD_MAKE_CONVERTOR(NullField,  TYPE_Null,             integer64,    0,         0)
     METAFIELD_MAKE_CONVERTOR(Int32,  TYPE_Integer,              integer,    val,         integer)
     METAFIELD_MAKE_CONVERTOR(Int64,  TYPE_Integer64,            integer64,  val,         integer64)
     METAFIELD_MAKE_CONVERTOR(bool,   TYPE_Boolean,              boolean,    val ? 1 : 0, boolean ? true : false)
