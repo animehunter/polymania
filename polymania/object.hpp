@@ -232,12 +232,13 @@ public:
         : VarMeta(name, type, varPointer) {
         TVarMetaList<Klass>::StaticVars().push_back(this);
     }
-};
 
-template<typename T, typename R, R T::* member>
-static void *MakeVarPointerGetter(void *obj) {
-    return &(((T*)obj)->*member).val;
-}
+protected:
+    template<typename R, R Klass::* member>
+    static void *MakeVarPointerGetter(void *obj) {
+        return &(((Klass*)obj)->*member).val;
+    }
+};
 
 #define CLASS_BEGIN_REGISTRATION void Object::StaticRegisterClasses() {
 #define CLASS_REGISTER(Klass) { Klass staticReg(STATIC_CONSTRUCTION); } TVarMetaList<Klass>::StaticRegisterVars(#Klass, Klass::StaticRegisterClass(#Klass));
@@ -248,6 +249,8 @@ static void *MakeVarPointerGetter(void *obj) {
 #define HANDLER_END_REGISTRATION }
 
 #define PROPERTY(varType, varName) struct VarMeta_ ## varName : public TVarMeta<Klass> { \
-                                       VarMeta_ ## varName() : TVarMeta(#varName, #varType, &MakeVarPointerGetter<Klass, decltype(varName), &Klass::varName>) {}\
+                                       VarMeta_ ## varName() : TVarMeta(#varName, #varType, \
+                                                                       &MakeVarPointerGetter<DeclaredVar<Klass, varType, VarMeta_ ## varName>, \
+                                                                       &Klass::varName>) {}\
                                    };\
                                    DeclaredVar<Klass, varType, VarMeta_ ## varName> varName;
