@@ -26,6 +26,7 @@ public:
     }
     PROPERTY(Int32, var);
     PROPERTY(Test*, selftest);
+    PROPERTY(std::string, something);
 
     Test(const Event &ev) {}
     void Update(GameSystem &game, const std::shared_ptr<Controller> &k){}

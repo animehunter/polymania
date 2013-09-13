@@ -190,6 +190,7 @@ public:
     T val;
     const VarMeta *meta;
 
+    DeclaredVar(const char *valstr) : val(valstr), meta(&StaticGetMeta()) {}
     DeclaredVar(const T &val) : val(val), meta(&StaticGetMeta()) {}
     DeclaredVar() : meta(&StaticGetMeta()) {}
 
