@@ -8,7 +8,6 @@ class GameSystem;
 
 struct NullField {
     inline NullField() {}
-    template<typename T> inline NullField(T i) {}
 };
 struct MetaField {
     static const MetaField nullField;
@@ -38,7 +37,7 @@ struct MetaField {
 
 #define METAFIELD_MAKE_CONVERTOR(t, e, v, vin, vout) MetaField(t val) : type(e), v(vin) {} \
                                                      operator t () const { ValidateType(e); return vout; }
-    METAFIELD_MAKE_CONVERTOR(NullField,  TYPE_Null,             integer64,    0,         0)
+    METAFIELD_MAKE_CONVERTOR(NullField,  TYPE_Null,             integer64,    0,         NullField())
     METAFIELD_MAKE_CONVERTOR(Int32,  TYPE_Integer,              integer,    val,         integer)
     METAFIELD_MAKE_CONVERTOR(Int64,  TYPE_Integer64,            integer64,  val,         integer64)
     METAFIELD_MAKE_CONVERTOR(bool,   TYPE_Boolean,              boolean,    val ? 1 : 0, boolean ? true : false)
@@ -54,6 +53,21 @@ private:
 private:
     static std::string typeNames[TYPE_Max];
     friend class Object;
+};
+
+class VarMeta {
+public:
+    typedef void*(*VarPointerGetter)(void*);
+
+    const std::string name;
+    const std::string type;
+    const VarPointerGetter varPointerGetter;
+
+    void *GetPointer(void *obj){ return varPointerGetter(obj); }
+
+protected:
+    VarMeta(std::string name, std::string type, VarPointerGetter varPointerGetter) 
+        : name(name), type(type), varPointerGetter(varPointerGetter){}
 };
 
 struct Event {    
@@ -112,13 +126,14 @@ public:
     // Class info
     const std::string name;
     const Int64 size;
+    std::vector<VarMeta*> vars;
     Constructor constructor;
     Destructor destructor;
     StaticConstructor constructorStatic;
     std::unordered_map<std::string, Event::Handler> handlers;
-
 };
 
+enum EStaticConstruction{ STATIC_CONSTRUCTION };
 class Object
 {
     Class* _class;
@@ -128,7 +143,7 @@ class Object
 
 protected:
     static std::unordered_map<std::string, Class> globalClasses;
-    
+
 public:
     static bool StaticInit();
     static Class* StaticFindClass(const std::string name);
@@ -148,33 +163,91 @@ protected:
     virtual void Draw(GameSystem &game)=0;
 };
 
-template<class TKlass>
-class DeclaredClass : public Object {
-private:
-    void* operator new(size_t size, void* mem){return mem;}   
-    static void InternalConstructor(void* object, const Event& ev){new(object) Klass(ev);}
-    static void InternalDestructor(void* object){((Klass*)object)->~Klass();}
-    static void StaticRegisterClass(const char* klassName){
-        globalClasses.insert(std::make_pair<std::string, Class>(klassName,
-            Class(klassName, sizeof(Klass), &Klass::InternalConstructor, &Klass::InternalDestructor, &Klass::StaticConstructor)));
-    }
+#define DECLARE_CLASS(TKlass)\
+private: \
+    friend class Object;\
+    typedef TKlass Klass; \
+    void* operator new(size_t size, void* mem){return mem;}    \
+    static void InternalConstructor(void* object, const Event& ev){new(object) Klass(ev);} \
+    static void InternalDestructor(void* object){((Klass*)object)->~Klass();} \
+    static Class &StaticRegisterClass(const char* klassName){ \
+        return globalClasses.insert(std::make_pair<std::string, Class>(klassName, \
+            Class(klassName, sizeof(Klass), &Klass::InternalConstructor, &Klass::InternalDestructor, &Klass::StaticConstructor))).first->second; \
+    } \
+    TKlass::TKlass(EStaticConstruction){}\
+protected: \
+    static void RegisterHandler(Class* klass, Event::Handler handlerFunction, const char* handlerName){ \
+        klass->handlers.insert( \
+            std::pair<const std::string, Event::Handler>(handlerName, handlerFunction)); \
+    } \
+    template<typename T, bool(T::*Handler)(const Event&)> \
+    static bool MakeStaticHandler(Object *self, const Event& ev) { return (((T*)self)->*Handler)(ev); }
 
-protected:
-    static void RegisterHandler(Class* klass, Event::Handler handlerFunction, const char* handlerName){
-        klass->handlers.insert(
-            std::pair<const std::string, Event::Handler>(handlerName, handlerFunction));
-    }
-    template<bool(TKlass::*Handler)(const Event&)>
-    static bool MakeStaticHandler(Object *self, const Event& ev) { return (((TKlass*)self)->*Handler)(ev); }
 
-    typedef TKlass Klass;
-    friend Object;
+template<typename Klass, typename T, typename VarMeta>
+class DeclaredVar {
+public:
+    T val;
+    const VarMeta *meta;
+
+    DeclaredVar(const T &val) : val(val), meta(&StaticGetMeta()) {}
+    DeclaredVar() : meta(&StaticGetMeta()) {}
+
+    operator T&() { return val; }
+    operator const T&() const { return val; }
+
+    T *operator ->() { return &val; }
+    const T *operator ->() const { return &val; }
+
+    static const VarMeta &StaticGetMeta() {
+        static VarMeta meta;
+        return meta;
+    }
 };
 
+
+template<class Klass> 
+class TVarMeta;
+
+template<class Klass>
+class TVarMetaList : public Object {
+    friend class TVarMeta<Klass>;
+    friend class Object;
+
+    static std::vector<VarMeta*> &StaticVars() {
+        static std::vector<VarMeta*> v;
+        return v;
+    }
+    static void StaticRegisterVars(std::string className, Class &klass) {
+        klass.vars.assign(StaticVars().begin(), StaticVars().end());
+    }
+private:
+    TVarMetaList() {}
+};
+
+template<class Klass>
+class TVarMeta : public VarMeta {
+public:
+    TVarMeta(std::string name, std::string type, VarPointerGetter varPointer) 
+        : VarMeta(name, type, varPointer) {
+        TVarMetaList<Klass>::StaticVars().push_back(this);
+    }
+};
+
+template<typename T, typename R, R T::* member>
+static void *MakeVarPointerGetter(void *obj) {
+    return &(((T*)obj)->*member).val;
+}
+
 #define CLASS_BEGIN_REGISTRATION void Object::StaticRegisterClasses() {
-#define CLASS_REGISTER(Klass) Klass::StaticRegisterClass(#Klass);
+#define CLASS_REGISTER(Klass) { Klass staticReg(STATIC_CONSTRUCTION); } TVarMetaList<Klass>::StaticRegisterVars(#Klass, Klass::StaticRegisterClass(#Klass));
 #define CLASS_END_REGISTRATION }
 
-#define HANDLER_BEGIN_REGISTRATION static void StaticConstructor(Class* klass) {
-#define HANDLER_REGISTER(Handler) RegisterHandler(klass, &MakeStaticHandler<&Klass::On##Handler>, #Handler);
+#define HANDLER_BEGIN_REGISTRATION(kls) DECLARE_CLASS(kls) public: static void StaticConstructor(Class* klass) {
+#define HANDLER_REGISTER(Handler) RegisterHandler(klass, &MakeStaticHandler<Klass, &Klass::On##Handler>, #Handler);
 #define HANDLER_END_REGISTRATION }
+
+#define PROPERTY(varType, varName) struct VarMeta_ ## varName : public TVarMeta<Klass> { \
+                                       VarMeta_ ## varName() : TVarMeta(#varName, #varType, &MakeVarPointerGetter<Klass, decltype(varName), &Klass::varName>) {}\
+                                   };\
+                                   DeclaredVar<Klass, varType, VarMeta_ ## varName> varName;

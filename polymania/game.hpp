@@ -3,7 +3,7 @@
 class Controller;
 class GameSystemImplementation;
 
-class GameSystem : public DeclaredClass<GameSystem> {
+class GameSystem : public Object {
 public:
     // variables
     double interp; //an interpolation value between the previous and the current frame for the purpose of drawing
@@ -12,7 +12,7 @@ public:
 public:
     //////////////////////////////////////////////////////////////////////////
     // Messages
-    HANDLER_BEGIN_REGISTRATION
+    HANDLER_BEGIN_REGISTRATION(GameSystem)
         HANDLER_REGISTER(CloseWindow)
         HANDLER_REGISTER(ResizedWindow)
     HANDLER_END_REGISTRATION
@@ -36,6 +36,6 @@ private:
     void Draw(GameSystem &game);
 
 private:
-    std::unique_ptr<GameSystemImplementation> impl;
+    std::shared_ptr<GameSystemImplementation> impl;
 };
 

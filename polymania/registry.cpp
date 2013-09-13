@@ -8,18 +8,26 @@
 #include "object.hpp"
 #include "game.hpp"
 
-class Test : public DeclaredClass<Test> {
+class Test : public Object {
 public:
-    HANDLER_BEGIN_REGISTRATION
+    HANDLER_BEGIN_REGISTRATION(Test)
         HANDLER_REGISTER(TestEvent)
     HANDLER_END_REGISTRATION
 
     bool OnTestEvent(const Event &ev){
-        std::cout << "Test::OnTestEvent" << std::endl;
+        std::cout << "Test::OnTestEvent variables: " << std::endl;
+        auto &vars = this->GetClass()->vars;
+        var = 10;
+        selftest = this;
+        for(auto it = vars.begin(); it != vars.end(); ++it) {
+            std::cout << (*it)->type << " " << (*it)->name << " pointer: " << (*it)->GetPointer(this) << " value: " << *(int*)(*it)->GetPointer(this) << std::endl;
+        }
         return true;
     }
+    PROPERTY(Int32, var);
+    PROPERTY(Test*, selftest);
 
-    Test(const Event &ev){}
+    Test(const Event &ev) {}
     void Update(GameSystem &game, const std::shared_ptr<Controller> &k){}
     void Draw(GameSystem &game){}
 };
