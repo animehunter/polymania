@@ -18,7 +18,6 @@ script: >
           polymania/*.cpp
           polymania/other/*.cpp
           -Wl,-Bstatic
-          -pthread
           -luv
           -lglfw3
           -lXrandr
@@ -28,6 +27,8 @@ script: >
           -lXi
           -Wl,-Bdynamic
           -lGL
+          -pthread
+          -Wl,--as-needed
           && 
           ls -lh && ldd a.out && echo "ITS DONE!"
 before_install: >
