@@ -18,8 +18,9 @@ script: >
           polymania/*.cpp
           polymania/other/*.cpp
           -lGL
-          -lX11
+          -lXxf86vm
           -lglfw3
+          -lX11
           -luv
 before_install: >
                   sudo apt-get update -qq
