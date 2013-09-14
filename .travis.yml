@@ -3,4 +3,4 @@ compiler:
   - gcc
   - clang
 # Change this to your needs
-script: $CXX -O3 -static -flto -fno-exceptions -fno-rtti -DGLEW_STATIC -Iexternal/ external/source/glew.cpp polymania/*.cpp
+script: $CXX -std=c++0x -O3 -static -flto -fno-exceptions -fno-rtti -DGLEW_STATIC -Iexternal/ external/source/glew.cpp polymania/*.cpp
