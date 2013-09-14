@@ -8,8 +8,6 @@ script: >
           &&
           pushd external/source/libuv && ./autogen.sh && ./configure && make -j && sudo make install && popd
           &&
-          ls -lah
-          &&
           $CXX -std=c++0x -Wall
           -O3 -s -fno-exceptions -fno-rtti 
           -DGLEW_STATIC
@@ -26,6 +24,8 @@ script: >
           -lXext
           -lX11
           -lXi
+          && 
+          ls -lah && echo "ITS DONE!"
 before_install: >
                   sudo apt-get update -qq
                   &&
