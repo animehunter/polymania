@@ -121,6 +121,8 @@ void RenderBatcher::Upload(UsageHint hintUsage) {
         case USAGE_Static:
             hint = GL_STATIC_DRAW;
             break;
+        default:
+            hint = GL_DYNAMIC_DRAW;
     }
     glBufferData(GL_ARRAY_BUFFER, nVerts*sizeof(Vertex), &verts[0], hint);
 }

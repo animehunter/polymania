@@ -10,8 +10,8 @@ script: >
           &&
           echo "note: BUILDING POLYMANIA" 
           && 
-          $CXX -std=c++0x -Wall
-          -O3 -s -fno-exceptions -fno-rtti 
+          $CXX -std=c++0x -Wall -Weffc++ -pedantic
+          -O3 -static -s -fno-exceptions -fno-rtti 
           -DGLEW_STATIC
           -Iexternal/
           external/source/glew.cpp
