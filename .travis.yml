@@ -21,6 +21,7 @@ script: >
           -luv
           -lglfw3
           -lGL
+          -lXrandr
           -lXxf86vm
           -lXext
           -lX11
@@ -31,3 +32,4 @@ before_install: >
                   cmake 
                   libxxf86vm-dev 
                   x11proto-xf86vidmode-dev 
+                  libxrandr-dev
