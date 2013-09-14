@@ -25,7 +25,7 @@ script: >
           -lX11
           -lXi
           && 
-          ls -la && ldd a.out && echo "ITS DONE!"
+          ls -lh && ldd a.out && echo "ITS DONE!"
 before_install: >
                   sudo apt-get update -qq
                   &&
