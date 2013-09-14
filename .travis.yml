@@ -17,3 +17,11 @@ script: >
           external/source/glew.cpp
           polymania/*.cpp
           polymania/other/*.cpp
+before_install: >
+                  sudo apt-get update -qq
+                  &&
+                  sudo apt-get install 
+                  cmake 
+                  libxxf86vm-dev 
+                  x11proto-xf86vidmode-dev 
+  
