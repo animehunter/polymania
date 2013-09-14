@@ -57,20 +57,21 @@ private:
 
 class VarMeta {
 public:
-    typedef void*(*VarPointerGetter)(void*);
+    typedef void*(*VarPointerGetter)(Object*);
 
     const std::string name;
     const std::string type;
     const VarPointerGetter varPointerGetter;
+    VarMeta *base;
 
-    void *GetPointer(void *obj){ return varPointerGetter(obj); }
+    void *GetPointer(Object *obj) const { return varPointerGetter(obj); }
 
 protected:
-    VarMeta(std::string name, std::string type, VarPointerGetter varPointerGetter) 
-        : name(name), type(type), varPointerGetter(varPointerGetter){}
+    VarMeta(std::string name, std::string type, VarPointerGetter varPointerGetter, VarMeta *base=0) 
+        : name(name), type(type), varPointerGetter(varPointerGetter), base(base) {}
 };
 
-struct Event {    
+struct Event {
     // Handler function
     typedef bool (*Handler)(Object*, const Event &ev);
     typedef std::unordered_map<std::string, MetaField> Data;
@@ -116,34 +117,53 @@ class Class {
 public:
     // Constructors
     typedef void (*StaticConstructor)(Class* klass);
-    typedef void (*Constructor)(void* object, const Event& ev);
-    typedef void (*Destructor)(void* object);
+    typedef void (*Constructor)(Object* object, const Event& ev);
+    typedef void (*Destructor)(Object* object);
 
     // Initialize a class
     Class(const std::string inName, Int64 inSize, Constructor inCtor, Destructor inDtor, StaticConstructor inCtorStatic)
-        : name(inName), size(inSize), constructor(inCtor), destructor(inDtor), constructorStatic(inCtorStatic) {};
+        : base(0), name(inName), size(inSize), constructor(inCtor), destructor(inDtor), constructorStatic(inCtorStatic), registerVar(0) {};
 
     // Class info
+    Class *base;
     const std::string name;
     const Int64 size;
-    std::vector<VarMeta*> vars;
     Constructor constructor;
     Destructor destructor;
     StaticConstructor constructorStatic;
     std::unordered_map<std::string, Event::Handler> handlers;
+    std::unordered_map<std::string, VarMeta*> vars;
+
+private:
+    void(*registerVar)(Class &klass);
+    friend class Object;
 };
 
-enum EStaticConstruction{ STATIC_CONSTRUCTION };
-class Object
-{
+class Object {
+    struct ObjectLink {
+        typedef void(*RegisterVar)(Class &klass);
+        RegisterVar registerVar;
+        std::string currentClass;
+        std::string baseClass;
+        ObjectLink(RegisterVar registerVar, std::string currentClass, std::string baseClass) 
+            : registerVar(registerVar), currentClass(currentClass), baseClass(baseClass) {}
+    };
+
     Class* _class;
     std::unordered_map<std::string, MetaField> _meta;
-    
+
     static void StaticRegisterClasses();
+    static void StaticRegisterClassesEnd();
 
 protected:
     static std::unordered_map<std::string, Class> globalClasses;
+    static std::vector<ObjectLink> objectLinks;
+    Object(const Event &ev) {}
 
+    enum EStaticConstruction{ STATIC_CONSTRUCTION };
+    Object(EStaticConstruction){}
+
+    static std::string GetBaseClassName() { return "Object"; }
 public:
     static bool StaticInit();
     static Class* StaticFindClass(const std::string name);
@@ -152,36 +172,41 @@ public:
     static void StaticDestroyObject(Object* obj);
     void StaticConstructor();
 
-    Object() {}
-    virtual ~Object(){};    
+    virtual ~Object(){};
     Class* GetClass() {return _class;}
     Event::Handler FindEventHandler(const std::string& name);
     void Send(const Event &ev);
+
+private:
+    Object(){}
 
 protected:
     virtual void Update(GameSystem &game, const std::shared_ptr<Controller> &k)=0;
     virtual void Draw(GameSystem &game)=0;
 };
 
-#define DECLARE_CLASS(TKlass)\
+#define DECLARE_CLASS(TKlass, TBase)\
+public:\
+    typedef TBase Base; \
 private: \
     friend class Object;\
     typedef TKlass Klass; \
     void* operator new(size_t size, void* mem){return mem;}    \
-    static void InternalConstructor(void* object, const Event& ev){new(object) Klass(ev);} \
-    static void InternalDestructor(void* object){((Klass*)object)->~Klass();} \
+    static void InternalConstructor(Object* object, const Event& ev){new(object) Klass(ev);} \
+    static void InternalDestructor(Object* object){((Klass*)object)->~Klass();} \
     static Class &StaticRegisterClass(const char* klassName){ \
         return globalClasses.insert(std::make_pair<std::string, Class>(klassName, \
             Class(klassName, sizeof(Klass), &Klass::InternalConstructor, &Klass::InternalDestructor, &Klass::StaticConstructor))).first->second; \
     } \
-    TKlass::TKlass(EStaticConstruction){}\
 protected: \
+    TKlass::TKlass(EStaticConstruction e) : Base(e){}\
     static void RegisterHandler(Class* klass, Event::Handler handlerFunction, const char* handlerName){ \
         klass->handlers.insert( \
             std::pair<const std::string, Event::Handler>(handlerName, handlerFunction)); \
     } \
     template<typename T, bool(T::*Handler)(const Event&)> \
-    static bool MakeStaticHandler(Object *self, const Event& ev) { return (((T*)self)->*Handler)(ev); }
+    static bool MakeStaticHandler(Object *self, const Event& ev) { return (((T*)self)->*Handler)(ev); } \
+    static std::string GetBaseClassName() { return #TBase; }
 
 
 template<typename Klass, typename T, typename VarMeta>
@@ -219,10 +244,13 @@ class TVarMetaList : public Object {
         static std::vector<VarMeta*> v;
         return v;
     }
-    static void StaticRegisterVars(std::string className, Class &klass) {
-        klass.vars.assign(StaticVars().begin(), StaticVars().end());
+    static void StaticRegisterVars(Class &klass) {
+        for (auto it = StaticVars().begin();it != StaticVars().end();++it) {
+            auto varIt = klass.vars.find((*it)->name);
+            if(varIt != klass.vars.end()) (*it)->base = varIt->second;
+            klass.vars[(*it)->name] = *it;
+        }
     }
-private:
     TVarMetaList() {}
 };
 
@@ -236,16 +264,18 @@ public:
 
 protected:
     template<typename R, R Klass::* member>
-    static void *MakeVarPointerGetter(void *obj) {
+    static void *MakeVarPointerGetter(Object *obj) {
         return &(((Klass*)obj)->*member).val;
     }
 };
 
 #define CLASS_BEGIN_REGISTRATION void Object::StaticRegisterClasses() {
-#define CLASS_REGISTER(Klass) { Klass staticReg(STATIC_CONSTRUCTION); } TVarMetaList<Klass>::StaticRegisterVars(#Klass, Klass::StaticRegisterClass(#Klass));
-#define CLASS_END_REGISTRATION }
+#define CLASS_REGISTER(Klass) { Klass staticReg(STATIC_CONSTRUCTION); } \
+                              &Klass::StaticRegisterClass(#Klass);\
+                              Object::objectLinks.push_back(Object::ObjectLink(&TVarMetaList<Klass>::StaticRegisterVars, #Klass, Klass::GetBaseClassName()));
+#define CLASS_END_REGISTRATION Object::StaticRegisterClassesEnd(); }
 
-#define HANDLER_BEGIN_REGISTRATION(kls) DECLARE_CLASS(kls) public: static void StaticConstructor(Class* klass) {
+#define HANDLER_BEGIN_REGISTRATION(kls, base) DECLARE_CLASS(kls, base) public: static void StaticConstructor(Class* klass) {
 #define HANDLER_REGISTER(Handler) RegisterHandler(klass, &MakeStaticHandler<Klass, &Klass::On##Handler>, #Handler);
 #define HANDLER_END_REGISTRATION }
 

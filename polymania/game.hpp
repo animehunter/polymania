@@ -12,7 +12,7 @@ public:
 public:
     //////////////////////////////////////////////////////////////////////////
     // Messages
-    HANDLER_BEGIN_REGISTRATION(GameSystem)
+    HANDLER_BEGIN_REGISTRATION(GameSystem, Object)
         HANDLER_REGISTER(CloseWindow)
         HANDLER_REGISTER(ResizedWindow)
     HANDLER_END_REGISTRATION

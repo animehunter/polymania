@@ -175,7 +175,7 @@ static void EngineMain(std::shared_ptr<Context> mainWindow) {
 
 int main() {
     Object::StaticInit();
-    Object* testInstance = Object::StaticConstructObject(Object::StaticFindClass("Test"));
+    Object* testInstance = Object::StaticConstructObject(Object::StaticFindClass("TestGrandChild"));
     if(testInstance) testInstance->Send(Event("TestEvent"));
     if(testInstance) testInstance->Send(Event("BadEventName"));
 

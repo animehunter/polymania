@@ -56,7 +56,7 @@ bool GameSystem::OnResizedWindow(const Event &ev) {
 }
 //////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////
-GameSystem::GameSystem(const Event &ev) : interp(0.0), quitRequested(false),
+GameSystem::GameSystem(const Event &ev) : Object(ev), interp(0.0), quitRequested(false),
                                           impl(new GameSystemImplementation(ev["inWidth"], ev["inHeight"])) {
 
 }

@@ -9,6 +9,7 @@
 
 // Globals
 std::unordered_map<std::string, Class> Object::globalClasses;
+std::vector<Object::ObjectLink> Object::objectLinks;
 
 const Event::Data Event::nullData = Event::Data();
 
@@ -54,6 +55,40 @@ const MetaField &Event::Get( const std::string& inName ) const {
     } else return it->second;
 }
 
+void Object::StaticRegisterClassesEnd() {
+    for (auto it = objectLinks.begin(); it != objectLinks.end();++it) {
+        auto clsIt = globalClasses.find(it->currentClass);
+        if(clsIt == globalClasses.end()) {
+            std::cerr << "ERROR Could not find " << it->currentClass << " in RegisterClassesEnd" << std::endl;
+        } else {
+            auto baseIt = globalClasses.find(it->baseClass);
+            if(baseIt == globalClasses.end()) {
+                std::cerr << "WARNING Could not find base " << it->baseClass << " in RegisterClassesEnd" << std::endl;
+            } else {
+                clsIt->second.base = &baseIt->second;
+            }
+            clsIt->second.registerVar = it->registerVar;
+        }
+    }
+    for (auto it = globalClasses.begin(); it != globalClasses.end();++it) {
+        if(it->second.base == 0 && it->first != "Object") {
+            std::cerr << "WARNING " << it->second.name << " has unresolved base" << std::endl;
+        } else {
+            // go all the way up to the topmost parent (Object)
+            // while going down the hierarchy, repeatedly call registerVar on the current class
+            std::vector<Class*> parents;
+            Class *cur = &it->second;
+            while(cur->name != "Object") {
+                parents.push_back(cur);
+                cur = cur->base;
+            }
+            for (auto parentIt = parents.rbegin();parentIt != parents.rend();++parentIt) {
+                (*parentIt)->registerVar(it->second);
+            }
+        }
+    }
+}
+
 bool Object::StaticInit() {
     MetaField::StaticInitMetaTypeNames();
     StaticRegisterClasses();
@@ -73,7 +108,7 @@ Class* Object::StaticFindClass(const std::string name) {
 
 Object* Object::StaticConstructObject(Class* cls, const Event::Data& data) {
     // Null check
-    if(!cls) return NULL;
+    if(!cls || !cls->constructor) return NULL;
 
     if(cls->size > 1024*1024) std::cerr << "WARNING Allocating object above 1MB, actual size: " << cls->size << std::endl;
 

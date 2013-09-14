@@ -10,30 +10,66 @@
 
 class Test : public Object {
 public:
-    HANDLER_BEGIN_REGISTRATION(Test)
+    HANDLER_BEGIN_REGISTRATION(Test, Object)
         HANDLER_REGISTER(TestEvent)
     HANDLER_END_REGISTRATION
 
     bool OnTestEvent(const Event &ev){
         std::cout << "Test::OnTestEvent variables: " << std::endl;
         auto &vars = this->GetClass()->vars;
-        var = 10;
-        selftest = this;
         for(auto it = vars.begin(); it != vars.end(); ++it) {
-            std::cout << (*it)->type << " " << (*it)->name << " pointer: " << (*it)->GetPointer(this) << " value: " << *(int*)(*it)->GetPointer(this) << std::endl;
+            std::cout << it->second->type << " " << it->second->name 
+                      << " pointer: " << it->second->GetPointer(this) 
+                      << " value: " << *(int*)it->second->GetPointer(this) 
+                      << std::endl;
         }
         return true;
     }
-    PROPERTY(Int32, var);
-    PROPERTY(Test*, selftest);
-    PROPERTY(std::string, something);
+    PROPERTY(Int32, var)
+    PROPERTY(Test*, selftest)
+    PROPERTY(std::string, something)
 
-    Test(const Event &ev) {}
+    Test(const Event &ev) : Object(ev), selftest(this) {}
     void Update(GameSystem &game, const std::shared_ptr<Controller> &k){}
     void Draw(GameSystem &game){}
 };
 
+class TestChild : public Test {
+public:
+    HANDLER_BEGIN_REGISTRATION(TestChild, Test)
+        HANDLER_REGISTER(TestEvent)
+    HANDLER_END_REGISTRATION
+
+    bool OnTestEvent(const Event &ev) {
+        return Base::OnTestEvent(ev);
+    }
+
+    PROPERTY(Int32, childVar)
+
+    TestChild(const Event &ev) : Test(ev), childVar(123) { var = 20; }
+};
+
+class TestGrandChild : public TestChild {
+public:
+    HANDLER_BEGIN_REGISTRATION(TestGrandChild, TestChild)
+        HANDLER_REGISTER(TestEvent)
+    HANDLER_END_REGISTRATION
+
+    bool OnTestEvent(const Event &ev) {
+        return Base::OnTestEvent(ev);
+    }
+
+    PROPERTY(Int64, childVar)
+
+    TestGrandChild(const Event &ev) : TestChild(ev), childVar(456) { var = 30; }
+};
+
+static void Object_StaticConstructor(Class* klass) {}
+
 CLASS_BEGIN_REGISTRATION
+    globalClasses.insert(std::make_pair<std::string, Class>("Object", Class("Object", sizeof(Object), 0, 0, &Object_StaticConstructor))); 
     CLASS_REGISTER(Test)
+    CLASS_REGISTER(TestGrandChild)
+    CLASS_REGISTER(TestChild)
     CLASS_REGISTER(GameSystem)
 CLASS_END_REGISTRATION
