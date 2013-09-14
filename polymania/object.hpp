@@ -108,8 +108,9 @@ public:
     const std::string& type;
     const Int32 priority;
 
-private:
     static const Data nullData;
+
+private:
     const Data& data;
 };
 

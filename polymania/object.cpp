@@ -134,7 +134,7 @@ Object* Object::StaticConstructObject(Class* cls, const Event::Data& data) {
 }
 
 Object* Object::StaticConstructObject(Class* cls) {
-    return StaticConstructObject(cls, Event::Data());
+    return StaticConstructObject(cls, Event::nullData);
 }
 
 void Object::StaticDestroyObject(Object* obj) {
