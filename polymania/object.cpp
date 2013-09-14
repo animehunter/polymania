@@ -2,6 +2,7 @@
 #include <string>
 #include <unordered_map>
 #include <iostream>
+#include <vector>
 
 #include "types.hpp"
 #include "controller.hpp"

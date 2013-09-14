@@ -199,7 +199,7 @@ private: \
             Class(klassName, sizeof(Klass), &Klass::InternalConstructor, &Klass::InternalDestructor, &Klass::StaticConstructor))).first->second; \
     } \
 protected: \
-    TKlass::TKlass(EStaticConstruction eStaticConstruct) : TBase(eStaticConstruct){}\
+    TKlass(EStaticConstruction) : Base(STATIC_CONSTRUCTION){}\
     static void RegisterHandler(Class* klass, Event::Handler handlerFunction, const char* handlerName){ \
         klass->handlers.insert( \
             std::pair<const std::string, Event::Handler>(handlerName, handlerFunction)); \
