@@ -196,7 +196,7 @@ private: \
     static void InternalDestructor(Object* object){((Klass*)object)->~Klass();} \
     static void StaticRegisterClass(const char* klassName){ \
         globalClasses.insert(std::make_pair<std::string, Class>(klassName, \
-            Class(klassName, sizeof(Klass), &Klass::InternalConstructor, &Klass::InternalDestructor, &Klass::StaticConstructor))).first->second; \
+            Class(klassName, sizeof(Klass), &Klass::InternalConstructor, &Klass::InternalDestructor, &Klass::StaticConstructor))); \
     } \
 protected: \
     TKlass(EStaticConstruction) : Base(STATIC_CONSTRUCTION){}\

@@ -123,7 +123,7 @@ private:
     template<typename T>
     struct CtorToFunc {
         static void Ctor(Resource *val) {
-            (void*)new(val)T();
+            new(val)T();
         }
     };
 
