@@ -21,12 +21,13 @@ script: >
           -pthread
           -luv
           -lglfw3
-          -lGL
           -lXrandr
           -lXxf86vm
           -lXext
           -lX11
           -lXi
+          -Wl,-Bdynamic
+          -lGL
           && 
           ls -lh && ldd a.out && echo "ITS DONE!"
 before_install: >
