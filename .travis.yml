@@ -6,7 +6,7 @@ compiler:
 script: > 
           cmake -DGLFW_INSTALL=off external/source/glfw && make
           &&
-          pushd external/source/libuv && ./autogen.sh && ./configure && make && cp libuv ../../../ && popd
+          pushd external/source/libuv && ./autogen.sh && ./configure && make && cp libuv.la ../../../ && popd
           &&
           $CXX -std=c++0x -Wall
           -O3 -s -fno-exceptions -fno-rtti 
