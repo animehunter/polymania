@@ -8,7 +8,7 @@ script: >
           &&
           pushd external/source/libuv && ./autogen.sh && ./configure && make -j && sudo make install && popd
           &&
-          echo "note: BUILDING POLYMANIA" 
+          echo "BUILDING POLYMANIA" 
           && 
           $CXX -std=c++0x -Wall -Weffc++ -pedantic
           -O3 -s -fno-exceptions -fno-rtti -static-libstdc++ -static-libgcc
@@ -30,8 +30,10 @@ script: >
           -lGL
           -pthread
           -Wl,--as-needed
-          && 
-          ls -lh && ldd a.out && echo "ITS DONE!" && cp a.out Release && cd Release && chmod ugo+x ./a.out && ./a.out
+          &&
+          echo "FINISHED BUILDING POLYMANIA" 
+          &&          
+          ls -lh && ldd a.out && echo "ITS DONE!"
 before_install: >
                   sudo apt-get update -qq
                   &&
