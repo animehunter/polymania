@@ -25,6 +25,7 @@ script: >
           -lXxf86vm
           -lXext
           -lX11
+          -lXi
 before_install: >
                   sudo apt-get update -qq
                   &&
