@@ -37,12 +37,7 @@ public:
 class TestChild : public Test {
 public:
     HANDLER_BEGIN_REGISTRATION(TestChild, Test)
-        HANDLER_REGISTER(TestEvent)
     HANDLER_END_REGISTRATION
-
-    bool OnTestEvent(const Event &ev) {
-        return Base::OnTestEvent(ev);
-    }
 
     PROPERTY(Int32, childVar)
 
@@ -56,6 +51,7 @@ public:
     HANDLER_END_REGISTRATION
 
     bool OnTestEvent(const Event &ev) {
+        std::cout << "TestGrandChild::OnTestEvent" << std::endl;
         return Base::OnTestEvent(ev);
     }
 
@@ -64,10 +60,8 @@ public:
     TestGrandChild(const Event &ev) : TestChild(ev), childVar(456) { var = 30; }
 };
 
-static void Object_StaticConstructor(Class* klass) {}
-
 CLASS_BEGIN_REGISTRATION
-    globalClasses.insert(std::make_pair<std::string, Class>("Object", Class("Object", sizeof(Object), 0, 0, &Object_StaticConstructor))); 
+    globalClasses.insert(std::make_pair<std::string, Class>("Object", Class("Object", sizeof(Object), 0, 0, &Object::StaticConstructor))); 
     CLASS_REGISTER(Test)
     CLASS_REGISTER(TestGrandChild)
     CLASS_REGISTER(TestChild)

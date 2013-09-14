@@ -153,7 +153,7 @@ class Object {
     std::unordered_map<std::string, MetaField> _meta;
 
     static void StaticRegisterClasses();
-    static void StaticRegisterClassesEnd();
+    static void StaticLinkClasses();
 
 protected:
     static std::unordered_map<std::string, Class> globalClasses;
@@ -170,7 +170,7 @@ public:
     static Object* StaticConstructObject(Class* cls, const Event::Data& data);
     static Object* StaticConstructObject(Class* cls);
     static void StaticDestroyObject(Object* obj);
-    void StaticConstructor();
+    static void StaticConstructor(Class* cls);
 
     virtual ~Object(){};
     Class* GetClass() {return _class;}
@@ -273,7 +273,7 @@ protected:
 #define CLASS_REGISTER(Klass) { Klass staticReg(STATIC_CONSTRUCTION); } \
                               Klass::StaticRegisterClass(#Klass);\
                               Object::objectLinks.push_back(Object::ObjectLink(&TVarMetaList<Klass>::StaticRegisterVars, #Klass, Klass::GetBaseClassName()));
-#define CLASS_END_REGISTRATION Object::StaticRegisterClassesEnd(); }
+#define CLASS_END_REGISTRATION }
 
 #define HANDLER_BEGIN_REGISTRATION(kls, base) DECLARE_CLASS(kls, base) public: static void StaticConstructor(Class* klass) {
 #define HANDLER_REGISTER(Handler) RegisterHandler(klass, &MakeStaticHandler<Klass, &Klass::On##Handler>, #Handler);

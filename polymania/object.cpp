@@ -55,7 +55,7 @@ const MetaField &Event::Get( const std::string& inName ) const {
     } else return it->second;
 }
 
-void Object::StaticRegisterClassesEnd() {
+void Object::StaticLinkClasses() {
     for (auto it = objectLinks.begin(); it != objectLinks.end();++it) {
         auto clsIt = globalClasses.find(it->currentClass);
         if(clsIt == globalClasses.end()) {
@@ -82,6 +82,14 @@ void Object::StaticRegisterClassesEnd() {
                 parents.push_back(cur);
                 cur = cur->base;
             }
+            for (auto parentIt = parents.begin();parentIt != parents.end();++parentIt) {
+                for(auto phandlerIt = (*parentIt)->handlers.begin(); 
+                    phandlerIt != (*parentIt)->handlers.end();
+                    ++phandlerIt) {
+                        if(it->second.handlers.find(phandlerIt->first) == it->second.handlers.end())
+                            it->second.handlers[phandlerIt->first] = phandlerIt->second;
+                }
+            }
             for (auto parentIt = parents.rbegin();parentIt != parents.rend();++parentIt) {
                 (*parentIt)->registerVar(it->second);
             }
@@ -94,10 +102,11 @@ bool Object::StaticInit() {
     StaticRegisterClasses();
     for (auto iter = globalClasses.begin();
          iter != globalClasses.end();
-         ++iter)
-    {
+         ++iter) {
         iter->second.constructorStatic(&iter->second);
-    } return true;
+    } 
+    Object::StaticLinkClasses();
+    return true;
 }
 
 Class* Object::StaticFindClass(const std::string name) {
@@ -136,7 +145,7 @@ void Object::StaticDestroyObject(Object* obj) {
     free(obj);
 }
 
-void Object::StaticConstructor() {}
+void Object::StaticConstructor(Class* cls) {}
 
 void Object::Send( const Event &ev ) {
     auto handler = FindEventHandler(ev.type);
