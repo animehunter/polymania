@@ -10,7 +10,7 @@ script: >
           &&
           echo "BUILDING POLYMANIA" 
           && 
-          $CXX -std=c++0x -Wno-unused-parameter -Wall -Wextra -pedantic
+          $CXX -std=c++0x -Wall -Wextra -pedantic -Wno-unused-parameter
           -O3 -s -fno-exceptions -fno-rtti -static-libstdc++ -static-libgcc
           -DGLEW_STATIC
           -Iexternal/
