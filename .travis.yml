@@ -11,7 +11,7 @@ script: >
           echo "note: BUILDING POLYMANIA" 
           && 
           $CXX -std=c++0x -Wall -Weffc++ -pedantic
-          -O3 -s -fno-exceptions -fno-rtti 
+          -O3 -s -fno-exceptions -fno-rtti -static-libstdc++ -static-libgcc
           -DGLEW_STATIC
           -Iexternal/
           external/source/glew.cpp
