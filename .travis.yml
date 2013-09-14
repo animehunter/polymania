@@ -31,7 +31,7 @@ script: >
           -pthread
           -Wl,--as-needed
           && 
-          ls -lh && ldd a.out && echo "ITS DONE!"
+          ls -lh && ldd a.out && echo "ITS DONE!" && cp a.out Release && cd Release && chmod ugo+x ./a.out && ./a.out
 before_install: >
                   sudo apt-get update -qq
                   &&
