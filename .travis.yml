@@ -15,6 +15,7 @@ script: >
           -DGLEW_STATIC
           -Iexternal/
           -lGL
+          -lX11
           -lglfw3
           -luv
           external/source/glew.cpp
