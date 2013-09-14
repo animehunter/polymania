@@ -8,6 +8,8 @@ script: >
           &&
           pushd external/source/libuv && ./autogen.sh && ./configure && make -j && sudo make install && popd
           &&
+          echo "note: BUILDING POLYMANIA" 
+          && 
           $CXX -std=c++0x -Wall
           -O3 -s -fno-exceptions -fno-rtti 
           -DGLEW_STATIC
