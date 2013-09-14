@@ -194,8 +194,8 @@ private: \
     void* operator new(size_t size, void* mem){return mem;}    \
     static void InternalConstructor(Object* object, const Event& ev){new(object) Klass(ev);} \
     static void InternalDestructor(Object* object){((Klass*)object)->~Klass();} \
-    static Class &StaticRegisterClass(const char* klassName){ \
-        return globalClasses.insert(std::make_pair<std::string, Class>(klassName, \
+    static void StaticRegisterClass(const char* klassName){ \
+        globalClasses.insert(std::make_pair<std::string, Class>(klassName, \
             Class(klassName, sizeof(Klass), &Klass::InternalConstructor, &Klass::InternalDestructor, &Klass::StaticConstructor))).first->second; \
     } \
 protected: \
@@ -271,7 +271,7 @@ protected:
 
 #define CLASS_BEGIN_REGISTRATION void Object::StaticRegisterClasses() {
 #define CLASS_REGISTER(Klass) { Klass staticReg(STATIC_CONSTRUCTION); } \
-                              &Klass::StaticRegisterClass(#Klass);\
+                              Klass::StaticRegisterClass(#Klass);\
                               Object::objectLinks.push_back(Object::ObjectLink(&TVarMetaList<Klass>::StaticRegisterVars, #Klass, Klass::GetBaseClassName()));
 #define CLASS_END_REGISTRATION Object::StaticRegisterClassesEnd(); }
 
