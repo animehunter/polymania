@@ -21,6 +21,7 @@ script: >
           -luv
           -lglfw3
           -lXrandr
+          -lXrender
           -lXxf86vm
           -lXext
           -lX11
