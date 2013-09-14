@@ -4,9 +4,9 @@ compiler:
   - clang
 # Change this to your needs
 script: > 
-          pushd external/source/glfw && mkdir build && cd build && cmake -DGLFW_INSTALL=off .. && make -j && cp src/libglfw3.a ../../../../ && popd
+          pushd external/source/glfw && mkdir build && cd build && cmake -DGLFW_INSTALL=off .. && make -j && sudo make install && popd
           &&
-          pushd external/source/libuv && ./autogen.sh && ./configure && make -j && libtool --mode=install cp libuv.la ../../../ && popd
+          pushd external/source/libuv && ./autogen.sh && ./configure && make -j && sudo make install && popd
           &&
           ls -lah
           &&
