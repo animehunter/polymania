@@ -17,12 +17,13 @@ script: >
           external/source/glew.cpp
           polymania/*.cpp
           polymania/other/*.cpp
+          -pthread
+          -luv
+          -lglfw3
           -lGL
           -lXxf86vm
           -lXext
           -lX11
-          -lglfw3
-          -luv
 before_install: >
                   sudo apt-get update -qq
                   &&
