@@ -12,6 +12,7 @@ script: >
           && 
           $CXX -std=c++0x -Wall -Wextra -pedantic -Wno-unused-parameter -Wno-gnu-anonymous-struct
           -O3 -s -fno-exceptions -fno-rtti -static-libstdc++ -static-libgcc
+          -DGLM_FORCE_CXX03
           -DGLEW_STATIC
           -Iexternal/
           external/source/glew.cpp
