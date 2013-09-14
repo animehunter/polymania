@@ -163,7 +163,7 @@ private:
 
 class ResourceShader : public Resource {
 public:
-    ResourceShader() : allocator(0), string(0) {}
+    ResourceShader() : string(0), allocator(0) {}
     bool Load(ResourceMemoryAllocator &inAllocator, ResourceDirectory &inDir);
     bool Unload();
 
